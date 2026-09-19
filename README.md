@@ -1,6 +1,6 @@
 # PyTorch Learning Projects
 
-This repository is a learning log of my progress with PyTorch. Each notebook focuses on a small set of concepts, moving from tensor fundamentals and automatic differentiation to image classification and generative models.
+This repository is a learning log of my progress with PyTorch and machine learning. The current goal is to understand diffusion models. 
 
 ## Progress
 
@@ -42,9 +42,7 @@ Based on [Training a Linear Regression Model in PyTorch](https://machinelearning
 - Clearing accumulated gradients between iterations
 - Tracking and plotting loss during training
 
-The model starts with a slope of `-10` and learns a value close to the target slope of `-5` as the loss decreases.
-
-### 3. MNIST logistic regression
+### 3. Logistic regression for image classification 
 
 Based on [Building a Logistic Regression Classifier in PyTorch](https://machinelearningmastery.com/building-a-logistic-regression-classifier-in-pytorch/).
 
@@ -56,8 +54,6 @@ Based on [Building a Logistic Regression Classifier in PyTorch](https://machinel
 - Training with stochastic gradient descent and cross-entropy loss
 - Evaluating predictions on the test set
 - Recording and plotting loss and accuracy across epochs
-
-The notebook records a final test accuracy of **86.73%** after 50 epochs. Despite the filename `mlp_mnist.ipynb`, the current model is a single-layer logistic regression classifier rather than a multilayer perceptron.
 
 ### 4. LeNet
 
@@ -75,8 +71,6 @@ Based on the LeNet tutorial in [bentrevett/pytorch-image-classification](https:/
 - Saving the weights with the best validation loss
 - Inspecting learned convolution filters
 
-The trained model contains **44,426 trainable parameters** and records **99.29% test accuracy** on MNIST.
-
 ### 5. Autoencoder
 
 - Building an encoder-decoder network for MNIST reconstruction
@@ -88,29 +82,16 @@ The trained model contains **44,426 trainable parameters** and records **99.29% 
 - Making experiments reproducible with fixed random seeds
 - Comparing training curves and reconstructed images across latent dimensions
 
-After 10 epochs, the recorded training MSE values were **0.041732**, **0.021151**, and **0.014443** for latent dimensions 2, 8, and 24, respectively. The larger latent space preserved more information and produced a lower reconstruction error.
-
 ## Planned projects
 
 ### 6. U-Net
 
-The planned U-Net project will focus on encoder-decoder architectures, skip connections, pixel-wise prediction, semantic segmentation, and evaluation with metrics such as Dice score and intersection over union.
+Essential prerequisite #1 for diffusion models. 
 
 ### 7. Variational autoencoder
 
-The planned VAE project will focus on probabilistic latent spaces, learning mean and variance parameters, the reparameterization trick, combining reconstruction and KL-divergence losses, and generating new samples.
+Essential prerequisite #2 for diffusion models. 
 
-## Running the notebooks
+### 8. Diffusion 
 
-The notebooks are designed to run in Google Colab or a local Jupyter environment. The datasets used by the notebooks are downloaded automatically through `torchvision`.
-
-Main dependencies:
-
-```text
-torch
-torchvision
-numpy
-matplotlib
-scikit-learn
-tqdm
-```
+Current goal. 
