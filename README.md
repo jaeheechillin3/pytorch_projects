@@ -6,10 +6,10 @@ This repository is a learning log of my progress with PyTorch and machine learni
 
 | Status | Project | Notebook | Main focus |
 |---|---|---|---|
-| Completed | PyTorch fundamentals | [`vid1.ipynb`](vid1.ipynb), [`vid2.ipynb`](vid2.ipynb), [`vid3.ipynb`](vid3.ipynb) | Tensors, neural-network basics, data loading, and autograd |
-| Completed | Linear regression | [`linear_regression.ipynb`](linear_regression.ipynb) | Building and optimizing a model manually |
-| Completed | MNIST logistic regression | [`mlp_mnist.ipynb`](mlp_mnist.ipynb) | Image classification with a linear classifier |
-| Completed | LeNet | [`lenet.ipynb`](lenet.ipynb) | Convolutional neural networks for MNIST |
+| Completed | PyTorch fundamentals | [`vid1.ipynb`](vid1.ipynb), [`vid2.ipynb`](vid2.ipynb), [`vid3.ipynb`](vid3.ipynb) | Basics of PyTorch: tensors, neural networks, data, autograd  |
+| Completed | Linear regression | [`linear_regression.ipynb`](linear_regression.ipynb) | The most basic ML project |
+| Completed | MNIST logistic regression | [`logistic_regression.ipynb`](logistic_regression.ipynb) | Image classification with linear regression |
+| Completed | LeNet | [`lenet.ipynb`](lenet.ipynb) | Convolutional neural network basics |
 | Completed | Autoencoder | [`autoencoder.ipynb`](autoencoder.ipynb) | Image reconstruction and latent representations |
 | Planned | U-Net | — | Semantic segmentation |
 | Planned | Variational autoencoder | — | Probabilistic latent-variable models |
