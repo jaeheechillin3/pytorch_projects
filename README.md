@@ -1,4 +1,4 @@
-# PyTorch Learning Projects
+# PyTorch Projects
 
 This repository is a learning log of my progress with PyTorch and machine learning. The current goal is to understand diffusion models.
 
