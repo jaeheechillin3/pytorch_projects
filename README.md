@@ -10,8 +10,8 @@ This repository is a learning log of my progress with PyTorch and machine learni
 | Completed | LeNet | [`lenet.ipynb`](lenet.ipynb) | Convolutional neural network basics | [4] |
 | Completed | Autoencoder | [`autoencoder.ipynb`](autoencoder.ipynb) | Image reconstruction and latent representations | — |
 | Completed | ResNet-18 | [`resnet.ipynb`](resnet.ipynb) | Residual CNN for CIFAR-10 image classification | [5] |
+| Completed | U-Net | [`unet.ipynb`](unet.ipynb) | Semantic segmentation | [6] |
 | In progress | Variational autoencoder | [`vae.ipynb`](vae.ipynb) | Probabilistic latent-variable models | — |
-| Planned | U-Net | [`unet.ipynb`](unet.ipynb) | Semantic segmentation | [6] |
 | Planned | Transformer | — | Scaled dot-product attention | — | 
 
 ## References
