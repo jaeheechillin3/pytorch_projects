@@ -26,4 +26,4 @@ This repository is a learning log of my progress with PyTorch and machine learni
 
 [5] “ResNet18 from Scratch Using PyTorch,” *GeeksforGeeks*. [Online]. Available: https://www.geeksforgeeks.org/deep-learning/resnet18-from-scratch-using-pytorch/. [Accessed: Sep. 24, 2026].
 
-[6] uygarkurt, “UNet-PyTorch,” *GitHub repository*. [Online]. Available: https://github.com/uygarkurt/UNet-PyTorch. [Accessed: Sep. 24, 2026].
+[6] “U-Net,” *YouTube*. [Online]. Available: https://www.youtube.com/watch?v=IHq1t7NxS8k. [Accessed: Sep. 26, 2026].
