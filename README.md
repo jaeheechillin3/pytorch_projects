@@ -15,8 +15,8 @@ This repository is a learning log of my progress with PyTorch and machine learni
 | Planned | Transformer | — | Scaled dot-product attention, multi-head attention | — | 
 | Planned | Graph Neural Network | — | — | — | 
 | Planned | Normalizing Flows | — | — | — | 
-| Planned | PixelCNN | — | — | Autoregressive image modeling | 
-| Planned | ViT | — | — | Transformers for computer vision | 
+| Planned | PixelCNN | — | Autoregressive image modeling | — | 
+| Planned | ViT | — | Transformers for computer vision | — | 
 
 
 ## References
