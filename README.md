@@ -33,4 +33,4 @@ This repository is a learning log of my progress with PyTorch and machine learni
 
 [6] A. Persson, “PyTorch Image Segmentation Tutorial with U-NET: everything from scratch baby,” *YouTube*. [Online]. Available: https://www.youtube.com/watch?v=IHq1t7NxS8k. [Accessed: Sep. 26, 2026].
 
-[7] A. Rush, “The Annotated Transformer.” [Online]. Available: https://nlp.seas.harvard.edu/2018/04/03/attention.html. [Accessed: Sep. 30, 2026].
+[7] A. Rush, “The Annotated Transformer,” *Harvard NLP*. [Online]. Available: https://nlp.seas.harvard.edu/2018/04/03/attention.html. [Accessed: Sep. 30, 2026].
