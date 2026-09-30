@@ -12,7 +12,7 @@ This repository is a learning log of my progress with PyTorch and machine learni
 | Completed | ResNet-18 | [`resnet.ipynb`](resnet.ipynb) | Residual CNN for CIFAR-10 image classification | [5] |
 | Completed | U-Net | [`unet.ipynb`](unet.ipynb) | Semantic segmentation | [6] |
 | In progress | Variational autoencoder | [`vae.ipynb`](vae.ipynb) | Probabilistic latent-variable models | — |
-| In progress | Transformer | — | Scaled dot-product attention, multi-head attention | — | 
+| In progress | Transformer | [`transformer.ipynb`](transformer.ipynb) | Scaled dot-product attention, multi-head attention | [7] | 
 | Planned | Graph Neural Network | — | — | — | 
 | Planned | Normalizing Flows | — | — | — | 
 | Planned | PixelCNN | — | Autoregressive image modeling | — | 
@@ -32,3 +32,5 @@ This repository is a learning log of my progress with PyTorch and machine learni
 [5] “ResNet18 from Scratch Using PyTorch,” *GeeksforGeeks*. [Online]. Available: https://www.geeksforgeeks.org/deep-learning/resnet18-from-scratch-using-pytorch/. [Accessed: Sep. 24, 2026].
 
 [6] A. Persson, “PyTorch Image Segmentation Tutorial with U-NET: everything from scratch baby,” *YouTube*. [Online]. Available: https://www.youtube.com/watch?v=IHq1t7NxS8k. [Accessed: Sep. 26, 2026].
+
+[7] A. Rush, “The Annotated Transformer.” [Online]. Available: https://nlp.seas.harvard.edu/2018/04/03/attention.html. [Accessed: Sep. 30, 2026].
