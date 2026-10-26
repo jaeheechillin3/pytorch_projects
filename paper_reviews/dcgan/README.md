@@ -15,7 +15,13 @@ There have been several attempts to combine CNNs with generative adversarial net
 3. _Batch normalization_. The use of batch normalization (Ioffe & Szegedy, 2015) greatly stabilized learning generally. Not applying batchnorm to the generator output layer and the discriminator input layer further improved performance.
 4. _ReLU activation function_. The use of ReLU and LeakyRelu activation functions were superior to the maxout functions used in the orignial Goodfellow paper. 
 
+<p align="center">
+  <img src="images/figure1.png" alt="DCGAN generator architecture" width="600">
+</p>
 
-![Figure 1: DCGAN generator architecture](images/figure1.png)
+The DCGAN was trained on three datasets: 
+- Large-scale Scene Understanding (LSUN)
+- Imagenet-1k
+- Faces
 
 ## Results 
