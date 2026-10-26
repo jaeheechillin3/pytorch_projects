@@ -6,13 +6,11 @@
 > **Link:** https://arxiv.org/abs/1511.06434
 
 ## Abstract & Introduction
+Despite the huge adoption of supervised learning with convolutional neural networks (CNNs) in computer vision, unsupervised learning has received comparatively little attention. This paper proposes an unsupervised learning model called deep convolutional generative adversarial networks (DCGANs) that learns image representations that can later be used for supervised vision tasks. 
 
-Despite the huge adoption of supervised learning with convolutional neural networks (CNNs) in computer vision, unsupervised learning has received comparatively little attention. This paper proposes an unsupervised learning model called deep convolutional generative adversarial networks (DCGANs) that learns image representations that can later be used for supervised vision tasks.
-
-DCGAN retains the original GAN's adversarial framework and provides an architecture and training recipe for deeper convolutional models. The original GAN paper already included a convolutional experiment and suggested reusing discriminator features; DCGAN develops and evaluates these ideas.
+The DCGAN ultimately improved the original GAN and made training significantly more stable. 
 
 ## Methods
-
 Scaling GANs with conventional CNN architectures proved difficult, especially due to unstable training. The paper adopts four architectural modifications:
 
 1. _The all-convolutional net_. Replace deterministic pooling with strided convolutions in the discriminator and fractionally strided convolutions (transposed convolutions) in the generator, allowing learned spatial downsampling and upsampling.
@@ -30,7 +28,7 @@ DCGAN was trained on LSUN bedrooms, ImageNet-1k, and a Faces dataset. Training u
 
 ## Results
 
-### 1. Useful discriminator representations
+### Useful discriminator representations
 
 ImageNet-trained discriminator features, paired with a linear SVM, achieve **82.8% accuracy on CIFAR-10**. This exceeds the reported K-means baselines but falls below Exemplar CNN's 84.3%.
 
@@ -40,7 +38,7 @@ ImageNet-trained discriminator features, paired with a linear SVM, achieve **82.
 
 *Table 1. Classification evaluates whether the learned features transfer to another dataset.*
 
-### 2. Smooth latent interpolation
+### Smooth latent interpolation
 
 Interpolating between latent vectors produces gradual changes in bedroom structure, suggesting meaningful organization of the latent space.
 
@@ -50,7 +48,7 @@ Interpolating between latent vectors produces gradual changes in bedroom structu
 
 *Figure 4. Latent interpolation produces smooth visual transitions.*
 
-### 3. Semantic vector arithmetic
+### Semantic vector arithmetic
 
 Arithmetic on averaged latent vectors changes visual attributes, illustrating semantic structure in the generator's input space.
 
@@ -59,15 +57,3 @@ Arithmetic on averaged latent vectors changes visual attributes, illustrating se
 </p>
 
 *Figure 7. Vector arithmetic manipulates visual concepts.*
-
-### 4. Removing window features
-
-Suppressing selected generator feature maps removes or replaces some windows while largely preserving room layout.
-
-<p align="center">
-  <img src="images/figure6.png" alt="Generated bedrooms before and after suppressing window-related feature maps" width="600">
-</p>
-
-*Figure 6. Top: original samples. Bottom: samples with selected feature maps suppressed.*
-
-These visualizations suggest meaningful representations, but do not establish complete disentanglement or rule out memorization.
