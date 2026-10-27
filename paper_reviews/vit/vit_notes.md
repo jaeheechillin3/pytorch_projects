@@ -16,13 +16,60 @@ On smaller datasets, Vision Transformers (ViTs) slightly lag behind in accuracy 
 ## Methods
 
 <p align="center">
-  <img src="images/figure1.png" width="600">
+  <img src="images/figure1.jpg" width="600">
 </p>
 
 <p align="center">
   *Figure 1. The generator maps a noise vector to a 64 × 64 image.*
 </p>
+
+
+
+<p align="center">
+  <img src="images/figure3.jpg" width="400">
+</p>
+
+<p align="center">
+  *Figure 1. The generator maps a noise vector to a 64 × 64 image.*
+</p>
+
+
+
+<p align="center">
+  <img src="images/figure5.jpg" width="600">
+</p>
+
+<p align="center">
+  *Figure 1. The generator maps a noise vector to a 64 × 64 image.*
+</p>
+
+
+
+<p align="center">
+  <img src="images/figure6.jpg" width="150">
+</p>
+
+<p align="center">
+  *Figure 1. The generator maps a noise vector to a 64 × 64 image.*
+</p>
+
+
+
+<p align="center">
+  <img src="images/table2.jpeg" width="600">
+</p>
+
+<p align="center">
+  *Figure 1. The generator maps a noise vector to a 64 × 64 image.*
+</p>
+
+
+
+
+
+
 3
+
 
 4.1 
 ## Results
