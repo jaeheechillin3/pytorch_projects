@@ -14,7 +14,7 @@ PyTorch implementations of foundational machine learning models and architecture
 | In progress | Variational autoencoder | [`vae.ipynb`](vae.ipynb) | Probabilistic latent-variable models | — |
 | In progress | Transformer | [`transformer.ipynb`](transformer.ipynb) | Scaled dot-product attention, multi-head attention | [7] | 
 | Completed | Vision Transformer (ViT) | [`vit.ipynb`](vit.ipynb) | Multiheaded attention applied to 16x16 image patches | [8] |
-| Completed | Simple diffusion (DDPM) | [`simple_diffusion.ipynb`](simple_diffusion.ipynb) | Unconditional KMNIST generation with a time-conditioned U-Net | [9] | 
+| Completed | Simple diffusion (DDPM) | [`simple_diffusion.ipynb`](simple_diffusion.ipynb) | Class-conditioned MNIST generation with a time- and label-conditioned U-Net | [9] | 
 | Planned | Graph Neural Network | — | — | — | 
 | Planned | Normalizing Flows | — | — | — | 
 | Planned | PixelCNN | — | Autoregressive image modeling | — | 
