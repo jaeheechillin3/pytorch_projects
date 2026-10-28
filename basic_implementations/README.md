@@ -16,7 +16,8 @@ PyTorch implementations of foundational machine learning models and architecture
 | Planned | Graph Neural Network | — | — | — | 
 | Planned | Normalizing Flows | — | — | — | 
 | Planned | PixelCNN | — | Autoregressive image modeling | — | 
-| Planned | ViT | — | Transformers for computer vision | — | 
+| Completed | Vision Transformer (ViT) | [`vit.ipynb`](vit.ipynb) | Fashion-MNIST classification, training curves, and attention visualization | [8] |
+| Completed | Simple diffusion (DDPM) | [`simple_diffusion.ipynb`](simple_diffusion.ipynb) | Unconditional KMNIST generation with a time-conditioned U-Net | [9] | 
 
 
 ## References
@@ -34,3 +35,7 @@ PyTorch implementations of foundational machine learning models and architecture
 [6] A. Persson, “PyTorch Image Segmentation Tutorial with U-NET: everything from scratch baby,” *YouTube*. [Online]. Available: https://www.youtube.com/watch?v=IHq1t7NxS8k. [Accessed: Sep. 26, 2026].
 
 [7] A. Rush, “The Annotated Transformer,” *Harvard NLP*. [Online]. Available: https://nlp.seas.harvard.edu/2018/04/03/attention.html. [Accessed: Sep. 30, 2026].
+
+[8] “Vision Transformer Quick Guide - Theory and Code in (almost) 15 min,” *YouTube*. [Online]. Available: https://www.youtube.com/watch?v=j3VNqtJUoz0. [Accessed: Oct. 28, 2026].
+
+[9] “Diffusion models from scratch in PyTorch,” *YouTube*. [Online]. Available: https://www.youtube.com/watch?v=a4Yfz2FxXiY. [Accessed: Oct. 28, 2026].
