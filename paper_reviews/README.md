@@ -4,11 +4,11 @@ Notes on deep learning papers.
 
 | Full title | Authors | Ref. |
 | --- | --- | :---: |
-| [Neural Machine Translation by Jointly Learning to Align and Translate](attention/attention_notes.md) | Dzmitry Bahdanau et al. | [1] |
-| [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](dcgan/dcgan_notes.md) | Alec Radford et al. | [2] |
-| [Attention Is All You Need](transformer/transformer_notes.md) | Ashish Vaswani et al. | [3] |
-| [Auto-Encoding Variational Bayes](vae/vae_notes.md) | Diederik P. Kingma et al. | [4] |
-| [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](vit/vit_notes.md) | Alexey Dosovitskiy et al. | [5] |
+| [Neural Machine Translation by Jointly Learning to Align and Translate](attention/attention_notes.md) | Bahdanau et al. | [1] |
+| [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](dcgan/dcgan_notes.md) | Radford et al. | [2] |
+| [Attention Is All You Need](transformer/transformer_notes.md) | Vaswani et al. | [3] |
+| [Auto-Encoding Variational Bayes](vae/vae_notes.md) | Kingma et al. | [4] |
+| [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](vit/vit_notes.md) | Dosovitskiy et al. | [5] |
 
 ## References
 
