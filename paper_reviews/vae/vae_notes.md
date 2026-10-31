@@ -20,6 +20,17 @@ $$
 -D_{\mathrm{KL}}(q_\phi(z\mid x)\Vert p(z)).
 $$
 
+The gap to the true log-likelihood is
+
+$
+\log p_\theta(x)-\mathcal L(x)
+=D_{\mathrm{KL}}(q_\phi(z\mid x)\Vert p_\theta(z\mid x))\geq0.
+$
+
+Thus, the bound becomes tight when the approximate posterior matches the true posterior. A shared encoder predicts variational parameters for each input instead of solving a separate optimization problem for every example.
+
+A single encoder can consequently be reused for both training examples and previously unseen inputs.
+
 The first term rewards reconstruction; the second regularizes the posterior toward the prior. For a diagonal Gaussian encoder, sampling is reparameterized as
 
 $$
@@ -33,6 +44,8 @@ $$
 D_{\mathrm{KL}}=\frac12\sum_j
 \left(\mu_j^2+\sigma_j^2-1-\log\sigma_j^2\right).
 $$
+
+Unlike a deterministic autoencoder, the encoder outputs a distribution over latent codes. The decoder likewise specifies an observation distribution: the paper uses Bernoulli outputs for MNIST and Gaussian outputs for continuous face images. Its reconstruction term is therefore a log-likelihood, not an arbitrary distance.
 
 Generation samples from the prior and then the decoder.
 

@@ -7,7 +7,9 @@
 
 ## Abstract & Introduction
 
-Early neural encoder–decoder models compress an entire source sentence into one fixed-length vector, making long sentences difficult to translate. This paper introduces attention: the decoder retrieves different source information for each target word.
+Previous machine translation systems consisted of many smaller subcomponents. A new approach called _neural machine translation_ uses a single neural network to read a sentence and output a translation. Most neural machine translation models are encoder-decoders where a sentence is transformed into a _fixed-length_ encoding vector, from which the translation is outputted. The problem with this approach is that it is difficult to compress all the information into a fixed-length vector for very long sentences. 
+
+To address this issue, the paper proposes an "attention" mechanism that for each target word, identifies the most relevant words in the original sentence. Each new target word is produced based on its "context vectors" as well as the previously generated target words.
 
 ## Methods
 
@@ -17,6 +19,8 @@ $$
 e_{ij}=v_a^\top\tanh(W_as_{i-1}+U_ah_j),\qquad
 \alpha_{ij}=\frac{\exp(e_{ij})}{\sum_k\exp(e_{ik})}.
 $$
+
+The weights sum to one across source positions, so the decoder can focus on several relevant words rather than selecting a single hard alignment.
 
 The context vector is a weighted sum:
 
