@@ -35,7 +35,7 @@ DCGAN was trained on LSUN bedrooms, ImageNet-1k, and a Faces dataset. Training u
 ImageNet-trained discriminator features, paired with a linear SVM, achieve **82.8% accuracy on CIFAR-10**. This exceeds the reported K-means baselines but falls below Exemplar CNN's 84.3%.
 
 <p align="center">
-  <img src="images/table1.png" alt="CIFAR-10 classification accuracy using unsupervised features" width="600">
+  <img src="images/table1.jpeg" alt="CIFAR-10 classification accuracy using unsupervised features" width="600">
 </p>
 
 <p align="center">
