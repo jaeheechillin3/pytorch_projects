@@ -18,7 +18,7 @@ To address this issue, the paper proposes an "attention" mechanism that for each
 A conventional encoder reads the source sentence into one fixed-length context vector. A recurrent decoder then generates target words conditioned on that vector and earlier target words:
 
 ```math
-p(y\mid x)=\prod_{i=1}^{T_y}p(y_i\mid y_{<i},x).
+p(y\mid x)=\prod_{i=1}^{T_y}p(y_i\mid y_1,\ldots,y_{i-1},x).
 ```
 
 Training maximizes the probability of reference translations, equivalently minimizing negative log-likelihood. The bottleneck is requiring one unchanged context vector to preserve all source information throughout decoding.
@@ -32,7 +32,7 @@ Training maximizes the probability of reference translations, equivalently minim
 The decoder uses a different context vector for every target position:
 
 ```math
-p(y_i\mid y_{<i},x)=g(y_{i-1},s_i,c_i).
+p(y_i\mid y_1,\ldots,y_{i-1},x)=g(y_{i-1},s_i,c_i).
 ```
 
 ```math
