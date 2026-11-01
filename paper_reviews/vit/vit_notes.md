@@ -25,7 +25,7 @@ Earlier approaches combined CNNs with attention or restricted attention to local
   <img src="./images/figure1.jpg" alt="Vision Transformer patch embedding and encoder architecture" width="650">
 </p>
 
-*Figure 1. Patch embeddings and a class token enter a Transformer encoder.*
+<p align="center"><em>Figure 1. Patch embeddings and a class token enter a Transformer encoder.</em></p>
 
 **Patch and position embeddings.** An image of size $`H\times W`$ with $`C`$ channels is split into $`N=HW/P^2`$ non-overlapping patches. Each flattened patch contains $`P^2C`$ values and is projected into a $`D`$-dimensional embedding. A learnable class token is prepended, and learned 1D position embeddings are added:
 
@@ -82,7 +82,7 @@ JFT-pretrained **ViT-H/14 reaches 88.55% ImageNet and 94.55% CIFAR-100 accuracy*
   <img src="./images/table2.jpeg" alt="Fine-tuning accuracy and pretraining cost across image classification benchmarks" width="650">
 </p>
 
-*Table 2. Transfer accuracy and pretraining cost.*
+<p align="center"><em>Table 2. Transfer accuracy and pretraining cost.</em></p>
 
 These are transfer results following large-scale pretraining. Reported pretraining costs are lower than those of the comparison models, although training schedules and other settings also differ.
 
@@ -94,7 +94,7 @@ ViT trails CNNs with smaller pretraining datasets but improves strongly with sca
   <img src="./images/figure3.jpg" alt="ImageNet transfer accuracy versus pretraining dataset size" width="500">
 </p>
 
-*Figure 3. Larger pretraining datasets benefit ViT.*
+<p align="center"><em>Figure 3. Larger pretraining datasets benefit ViT.</em></p>
 
 The paper also compares subsets of JFT, supporting the conclusion that convolutional inductive bias helps with limited data, while sufficiently large datasets let ViT learn useful spatial relationships.
 
@@ -106,7 +106,7 @@ In a controlled comparison on JFT-300M, ViT needs approximately **2–4 times le
   <img src="./images/figure5.jpg" alt="Transfer performance versus pretraining compute for ViT, ResNets, and hybrids" width="650">
 </p>
 
-*Figure 5. Transfer performance versus pretraining compute.*
+<p align="center"><em>Figure 5. Transfer performance versus pretraining compute.</em></p>
 
 ### 4.5 Inspecting Vision Transformer
 
@@ -116,7 +116,7 @@ Learned position embeddings reflect spatial relationships between patches. Atten
   <img src="./images/figure6.jpg" alt="Output-token attention projected onto input images" width="300">
 </p>
 
-*Figure 6. Output-token attention over image regions.*
+<p align="center"><em>Figure 6. Output-token attention over image regions.</em></p>
 
 Attention highlights regions relevant to classification, although attention weights alone do not establish causal explanations.
 
