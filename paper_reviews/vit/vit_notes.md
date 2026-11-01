@@ -87,7 +87,7 @@ ViT trails CNNs with smaller pretraining datasets but improves strongly with sca
 Using the same JFT-300M dataset, ViTs, ResNets and hybrids were assessed on performance versus pretraining cost. ViTs have significantly better performance/compute ratios compared to ResNets; ViT uses approximately 2 to 4 times less compute to attain the same performance. Hybrids slightly outperform ViTs at small computational budgets but this pattern disappears for larger budgets. 
 
 <p align="center">
-  <img src="./images/figure6.jpg" alt="Output-token attention projected onto input images" width="300">
+  <img src="./images/figure6.jpg" alt="Output-token attention projected onto input images" width="250">
 </p>
 
 <p align="center"><em>Figure 6. Output-token attention over image regions.</em></p>
