@@ -7,9 +7,9 @@
 
 ## Abstract & Introduction
 
-Recurrent sequence models process positions sequentially, limiting training parallelism. The Transformer replaces recurrence and convolution with attention, allowing direct interaction between distant tokens.
+Recurrent neural networks (RNNs) have long been the architecture of choice for natural language processing tasks such as machine translation. However, the sequential RNNs have two large shortcomings: parallelization is difficult, and relationships between far apart tokens are difficult to model. There have been attempts to use convolutional neural networks (CNNs) alongside RNNs in order to reduce sequential computation. 
 
-Bahdanau attention already lets a decoder consult different source positions. The Transformer extends the use of attention to building the source and target representations themselves. The important shift is that tokens can exchange information directly, rather than first passing it through a chain of recurrent states.
+This paper proposes the Transformer, a model that relies entirely on the attention mechanism to model global dependencies between input and output sequences. Without reliance on any recurrence or convolution, the model achieves significantly more parallelization and reaches state of the art results on machine translation benchmarks. 
 
 ## Methods
 
@@ -17,7 +17,27 @@ Bahdanau attention already lets a decoder consult different source positions. Th
 
 The base model has six encoder and six decoder layers, with $d_{\mathrm{model}}=512$ and eight attention heads. The encoder produces contextual source representations; the decoder predicts a target sequence conditioned on them. The encoder is bidirectional, while the decoder must respect the order in which words become available.
 
-### Scaled dot-product attention
+<p align="center">
+  <img src="figure1.png" width="600">
+</p>
+
+<p align="center"><em>Figure 1. The Transformer model architecture.</em></p>
+
+
+### Attention Mechanism 
+
+<p align="center">
+  <img src="figure1.png" width="600">
+</p>
+
+<p align="center"><em>Figure 1. The Transformer model architecture.</em></p>
+
+<p align="center">
+  <img src="figure1.png" width="600">
+</p>
+
+<p align="center"><em>Figure 1. The Transformer model architecture.</em></p>
+
 
 Scaled dot-product attention computes
 
@@ -31,8 +51,6 @@ For one head, an input $X\in\mathbb R^{n\times d_{\mathrm{model}}}$ is projected
 Queries select relevant keys; the resulting weights combine values. Scaling prevents large dot products from saturating softmax. Multi-head attention concatenates independently projected attention outputs.
 
 The scale factor can be motivated by assuming independent query and key components with mean zero and variance one. Their dot product sums $d_k$ terms and has variance $d_k$; dividing by $\sqrt{d_k}$ keeps its variance near one. Without scaling, softmax can become extremely concentrated, leaving small gradients.
-
-### Multi-head attention
 
 For head $r$,
 
@@ -78,32 +96,29 @@ $
 
 Different frequencies represent position at different scales. These encodings supply order information without requiring recurrent computation.
 
-### Training versus generation
+### Training 
 
-Training uses Adam with learning-rate warmup, dropout, and label smoothing. Target positions are processed in parallel during training, while generation remains autoregressive.
-
-During training, the decoder receives the correct target sequence shifted by one position. For a target “I am here,” its input begins with a start token followed by “I am,” and its prediction targets are “I am here.” Causal masking prevents later input positions from revealing an answer. This makes all next-token losses computable in one forward pass without removing the autoregressive dependency.
-
-At inference, the next word is unknown: the decoder predicts it, appends it to the prefix, and repeats. Thus, parallel training does not imply parallel generation of a complete translation.
+The model was trained on the WMT 2014 English-German dataset and the WMT 2014 English-French dataset, containing 4.5 million and 36 million sentences each. The Adam optimizer, residual dropout and label smoothing was used. The model was trained on eight NVIDIA P100 GPUs. 
 
 ## Results
 
 ### Translation quality and efficiency
 
-The big model achieves **28.4 BLEU on WMT 2014 English–German** and **41.8 on English–French** (Table 2). The French result uses 3.5 days on eight P100 GPUs. Parsing experiments demonstrate transfer beyond translation.
+The Transformer achieves state-of-the-art BLEU scores on both English-to-German and English-to-French translation tasks as the fraction of the training cost. 
 
-These results concern the full encoder–decoder system, including its optimization and decoding choices. They demonstrate that recurrent computation is unnecessary for strong translation performance; they do not isolate attention as the only reason for every improvement.
+<p align="center">
+  <img src="images/table4.jpeg" width="600">
+</p>
 
-### Ablations
+<p align="center"><em>Table 2. BLUE scores and training costs of English-to-German and English-to-French translation models.</em></p>
 
-The ablation study examines head count, attention dimensions, model size, and positional encodings. Learned and sinusoidal positions perform similarly, while a single attention head performs worse than the best multi-head configuration.
+### English Constituency Parsing
 
-This supports the usefulness of multiple learned attention subspaces.
+In order to evaluate the Transformer for other NLP tasks, its performance on English constituency parsing was experimented. The Wall Street Journal (WSJ) portion of the Penn Treebank and BerkeleyParser datasets were used. Despite the lack of task-specific tuning, the Transformer outperformed all previous models except one. 
 
-### Strengths and limitations
+<p align="center">
+  <img src="images/table4.jpeg" width="600">
+</p>
 
-Self-attention shortens dependency paths, but its attention matrix grows quadratically with sequence length. For length $n$, every query compares with $n$ keys, yielding $n^2$ attention weights per head. Direct interaction makes distant tokens easier to connect, but long inputs can be costly in memory and computation. The original architecture also retains a sequential decoding loop.
+<p align="center"><em>Table 4. English constituency parsing results. </em></p>
 
-The paper establishes attention as the central sequence-modeling operation.
-
-For implementation detail, the supplementary [Annotated Transformer](https://nlp.seas.harvard.edu/annotated-transformer/) walks through the model in PyTorch; its code conventions should be distinguished from the original paper's exact architecture.
