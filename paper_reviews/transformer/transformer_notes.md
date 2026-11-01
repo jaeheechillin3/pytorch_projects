@@ -30,7 +30,7 @@ The base model has six encoder and six decoder layers, with $`d_{\mathrm{model}}
 Every sublayer uses a residual connection followed by layer normalization:
 
 ```math
-\operatorname{LayerNorm}(x+\operatorname{Sublayer}(x)).
+\mathrm{LayerNorm}(x+\mathrm{Sublayer}(x)).
 ```
 
 All sublayers output 512-dimensional vectors, allowing residual addition. The decoder inputs are shifted right by one token; together with causal masking, this prevents predictions from accessing the target token being predicted or later tokens. Training processes target positions in parallel, while generation proceeds sequentially.
@@ -50,7 +50,7 @@ Attention compares a query with keys to obtain weights, then returns a weighted 
 Queries and keys have dimension $`d_k`$; values have dimension $`d_v`$. With queries, keys, and values packed into matrices:
 
 ```math
-\operatorname{Attention}(Q,K,V)=\operatorname{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V.
+\mathrm{Attention}(Q,K,V)=\mathrm{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V.
 ```
 
 Softmax operates across each row of the score matrix. In self-attention, the matrix has shape $`n\times n`$, connecting every query position to every key position.
@@ -68,11 +68,11 @@ Assuming independent query and key components with zero mean and unit variance, 
 Each head applies separate learned projections before computing attention. The outputs are concatenated and projected:
 
 ```math
-\mathrm{head}_i=\operatorname{Attention}(QW_i^Q,KW_i^K,VW_i^V).
+\mathrm{head}_i=\mathrm{Attention}(QW_i^Q,KW_i^K,VW_i^V).
 ```
 
 ```math
-\operatorname{MultiHead}(Q,K,V)=\operatorname{Concat}(\mathrm{head}_1,\ldots,\mathrm{head}_h)W^O.
+\mathrm{MultiHead}(Q,K,V)=\mathrm{Concat}(\mathrm{head}_1,\ldots,\mathrm{head}_h)W^O.
 ```
 
 Different heads can attend to different positions and representation subspaces. The base model uses eight heads with $`d_k=d_v=64`$. Their outputs concatenate to 512 dimensions. Smaller dimensions per head keep the total computational cost similar to one head at full dimensionality.
@@ -90,7 +90,7 @@ Causal masking sets forbidden scores to $`-\infty`$ before softmax, assigning fu
 Each layer applies two linear transformations with a ReLU between them:
 
 ```math
-\operatorname{FFN}(x)=\max(0,xW_1+b_1)W_2+b_2.
+\mathrm{FFN}(x)=\max(0,xW_1+b_1)W_2+b_2.
 ```
 
 The network expands from 512 to 2048 dimensions and returns to 512. Parameters are shared across positions within a layer but differ between layers. Attention mixes information across tokens; the feed-forward network transforms each token independently.
