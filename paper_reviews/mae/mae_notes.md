@@ -17,7 +17,7 @@ Images contain substantial spatial redundancy. Reconstructing a small missing re
 
 ## 2 Related Work
 
-The paper connects masked language modeling, denoising autoencoders, masked image prediction, and other self-supervised representation-learning methods.
+The paper connects masked language modeling, denoising autoencoders, masked image prediction, and other self-supervised representation-learning methods. Contrastive methods learn agreement between augmented views, whereas MAE predicts missing content. The difference changes what must be preserved in the representation and which augmentations are useful. Masking itself supplies a stochastic prediction problem each time an image is sampled.
 
 ## 3 Approach
 
@@ -28,11 +28,11 @@ The paper connects masked language modeling, denoising autoencoders, masked imag
 
 <p align="center"><em>Figure 1. Visible patches enter the encoder; mask tokens enter only the decoder. [Image to add]</em></p>
 
-**Masking.** Randomly remove a large fraction of image patches, typically 75%. The remaining patches provide a sparse view of the image. For a $224\times224$ image with $16\times16$ patches, 196 tokens become 49 visible tokens at a 75% masking ratio.
+**Masking.** Randomly remove a large fraction of image patches, typically 75%. The remaining patches provide a sparse view of the image. For a $224\times224$ image with $16\times16$ patches, 196 tokens become 49 visible tokens at a 75% masking ratio. Sampling visible patches uniformly without replacement distributes evidence across the image. Heavy random masking makes simple interpolation from immediately adjacent pixels less reliable.
 
 **MAE encoder.** Feed only visible patch embeddings and their positional information into a ViT. No mask tokens enter the encoder, reducing its sequence length. Positional embeddings preserve the original locations of visible patches, even though those patches are processed as a shorter sequence.
 
-**MAE decoder.** Add learned mask tokens to the encoded visible tokens, restore spatial order, and use a lightweight decoder to predict pixels. The encoder and decoder need not have the same width or depth. The default ablation decoder has eight blocks and width 512; it handles reconstruction-specific processing while the larger encoder learns transferable features.
+**MAE decoder.** Add learned mask tokens to the encoded visible tokens, restore spatial order, and use a lightweight decoder to predict pixels. The encoder and decoder need not have the same width or depth. The default ablation decoder has eight blocks and width 512; it handles reconstruction-specific processing while the larger encoder learns transferable features. The decoder processes the complete token sequence, but its smaller width and depth keep that stage relatively inexpensive. A shared learned mask token initially marks every missing location; positional embeddings distinguish where each missing patch belongs.
 
 **Reconstruction target.** Minimize mean squared error over masked patches only:
 
@@ -42,7 +42,7 @@ The paper connects masked language modeling, denoising autoencoders, masked imag
 \|\widehat x_i-x_i\|_2^2.
 ```
 
-The paper also tests normalizing pixel values within each target patch. The decoder is discarded for downstream recognition. Normalization subtracts each target patch's mean and divides by its standard deviation. This changes the prediction target, rather than normalizing the whole input image.
+The paper also tests normalizing pixel values within each target patch. The decoder is discarded for downstream recognition. Normalization subtracts each target patch's mean and divides by its standard deviation. This changes the prediction target, rather than normalizing the whole input image. Because visible patches do not contribute to the loss, their predicted pixels need not look as good as the hidden-region predictions. Reconstruction figures should therefore be interpreted with the loss mask in mind. Plausible completion also need not exactly recover an inherently ambiguous hidden region.
 
 **Implementation.** Randomly shuffle patch tokens, retain a subset for encoding, and use inverse shuffling to restore the full sequence.
 
@@ -66,11 +66,11 @@ The paper also tests normalizing pixel values within each target patch. The deco
 
 <p align="center"><em>Figure 5. Masking ratio versus fine-tuning and linear-probing accuracy. [Image to add]</em></p>
 
-**Decoder design.** A lightweight decoder can support useful encoder representations; reconstruction and recognition are distinct objectives.
+**Decoder design.** A lightweight decoder can support useful encoder representations; reconstruction and recognition are distinct objectives. A decoder with enough capacity can absorb some of the pixel-level specialization, allowing the encoder output to remain more useful for recognition. Decoder settings can affect linear probing more strongly than full fine-tuning.
 
 **Mask tokens.** Inserting them only after encoding saves computation. In the ViT-L ablation, excluding encoder mask tokens reduces training FLOPs by about 3.3 times and measured training time by about 2.8 times.
 
-**Targets and augmentation.** Study raw versus normalized pixel targets, data augmentation, random versus structured masking, and training duration. Cropping-only augmentation works well; the contrastive-learning recipe of strong color transformations is not automatically beneficial.
+**Targets and augmentation.** Study raw versus normalized pixel targets, data augmentation, random versus structured masking, and training duration. Cropping-only augmentation works well; the contrastive-learning recipe of strong color transformations is not automatically beneficial. Longer pretraining helps, partly because each epoch exposes the encoder to only a fraction of the patches. Structured block masking is also harder than random masking at the same high ratio, showing that the spatial arrangement of missing information matters.
 
 <p align="center">
   <!-- TODO: Add ./images/table1.png, then uncomment the image below. -->
@@ -98,11 +98,11 @@ Fine-tuning only some blocks can reveal representation quality that linear probi
 
 Evaluate COCO detection/instance segmentation, ADE20K semantic segmentation, and additional classification datasets. Compare pixel reconstruction with discrete-token targets.
 
-These experiments ask whether the representation transfers beyond the image-reconstruction task used in pretraining.
+These experiments ask whether the representation transfers beyond the image-reconstruction task used in pretraining. COCO evaluates localization and instance masks, while ADE20K tests semantic labels across image pixels. Improvements here provide evidence beyond a single classification benchmark. The comparisons also show that predicting normalized pixels can be competitive without requiring an additional pretrained image tokenizer.
 
 ## 6 Discussion and Conclusion
 
-A simple masked reconstruction objective can train large visual encoders effectively. Good representations do not require the downstream task to resemble reconstruction.
+A simple masked reconstruction objective can train large visual encoders effectively. Good representations do not require the downstream task to resemble reconstruction. The main contribution combines the learning objective with an efficient asymmetric implementation; either idea alone gives an incomplete account of the method.
 
 ## Appendix notes
 
