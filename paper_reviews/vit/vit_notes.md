@@ -3,9 +3,15 @@
 > **Authors:** Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, Neil Houlsby\
 > **Institutions:** Google Research, Brain Team\
 > **Publication:** ICLR 2021\
-> **Link:** https://arxiv.org/abs/2010.11929
+> **Link:** [https://arxiv.org/abs/2010.11929](https://arxiv.org/abs/2010.11929)
 
-## Abstract & Introduction
+*Draft — follows the paper's main section order; appendices are condensed.*
+
+## Abstract
+
+Image patches let a standard Transformer encoder perform visual recognition.
+
+## 1 Introduction
 
 In natural language processing (NLP), Transformers had become a dominant architecture by the time of this paper. Through pretraining on a large text corpus then fine-tuning, Transformers have shown strong performance on many NLP tasks. However, convolutional neural networks (CNNs) remained the dominant architecture at the time in computer vision. There have been multiple attempts to introduce the self-attention mechanism to various parts of CNNs, often while retaining a convolutional backbone. 
 
@@ -13,9 +19,13 @@ This paper takes a different approach; instead of relying on CNNs, Transformers 
 
 On smaller pretraining datasets, Vision Transformers (ViTs) lag behind in accuracy compared to CNNs of comparable sizes. This is due to ViTs having fewer built-in inductive biases like translation equivariance and locality, both of which are inherent to CNNs. However, ViTs perform at the state of the art level on large datasets.
 
-## Method
+## 2 Related Work
 
-### Model 
+Contrast pure patch-based Transformers with CNN–attention hybrids, local-attention models, and large-scale visual pretraining.
+
+## 3 Method
+
+### 3.1 Vision Transformer (ViT) 
 
 <p align="center">
   <img src="./images/figure1.jpg" alt="Vision Transformer patch embedding and encoder architecture" width="600">
@@ -54,13 +64,23 @@ y=\mathrm{LN}(z_L^0).
 
 The input class token is shared across images, but its output becomes image-specific through attention. A classification head uses this representation: an MLP with one hidden layer during pretraining and a linear layer during fine-tuning. ViT uses an encoder for classification, so no causal mask or autoregressive decoder is needed.
 
-### Experiments
+**Inductive bias.** Unlike convolution, global self-attention does not hard-code local neighborhoods throughout the network.
+
+**Hybrid architecture.** The same encoder can consume projected CNN feature maps.
+
+### 3.2 Fine-tuning and Higher Resolution
+
+Replace the classification head for downstream labels. At higher resolution, keep patch size fixed and interpolate the pretrained spatial position embeddings in two dimensions.
+
+## 4 Experiments
+
+### 4.1 Setup
 
 Pretraining uses ImageNet, ImageNet-21k, or JFT-300M. Evaluation includes ImageNet, CIFAR-10/100, Pets, Flowers, and VTAB. The paper compares ViT-Base, Large, and Huge with ResNet (BiT) and hybrid models. In names such as ViT-L/16, the letter indicates model size and the number indicates patch width.
 
 Pretraining uses Adam; fine-tuning uses SGD with momentum. 
 
-## Results
+### 4.2 Comparison to State of the Art
 
 <p align="center">
   <img src="./images/table2.jpeg" alt="Fine-tuning accuracy and pretraining cost across image classification benchmarks" width="650">
@@ -70,6 +90,8 @@ Pretraining uses Adam; fine-tuning uses SGD with momentum.
 
 The ViT models trained on the larger JFT-300M dataset outperform state-of-the-art CNN models on all datasets despite requiring substantially less compute for pretraining. ViT models trained on the smaller ImageNet-21k also performs well. 
 
+### 4.3 Pre-training Data Requirements
+
 <p align="center">
   <img src="./images/figure3.jpg" alt="ImageNet transfer accuracy versus pretraining dataset size" width="400">
 </p>
@@ -77,6 +99,8 @@ The ViT models trained on the larger JFT-300M dataset outperform state-of-the-ar
 <p align="center"><em>Figure 3. ImageNet transfer accuracy versus pretraining dataset size.</em></p>
 
 ViT trails CNNs with smaller pretraining datasets but improves strongly with scale. Larger ViT models also require more data to realize their advantage.
+
+### 4.4 Scaling Study
 
 <p align="center">
   <img src="./images/figure5.jpg" alt="Transfer performance versus pretraining compute for ViT, ResNets, and hybrids" width="600">
@@ -86,6 +110,8 @@ ViT trails CNNs with smaller pretraining datasets but improves strongly with sca
 
 Using the same JFT-300M dataset, ViTs, ResNets and hybrids were assessed on performance versus pretraining cost. ViTs have significantly better performance/compute ratios compared to ResNets; ViT uses approximately 2 to 4 times less compute to attain the same performance. Hybrids slightly outperform ViTs at small computational budgets but this pattern disappears for larger budgets. 
 
+### 4.5 Inspecting Vision Transformer
+
 <p align="center">
   <img src="./images/figure6.jpg" alt="Output-token attention projected onto input images" width="250">
 </p>
@@ -94,3 +120,17 @@ Using the same JFT-300M dataset, ViTs, ResNets and hybrids were assessed on perf
 
 Attention highlights regions relevant to classification, although attention weights alone do not establish causal explanations.
 
+
+The paper also inspects learned filters, position embeddings, and attention distances.
+
+### 4.6 Self-supervision
+
+A preliminary masked-patch prediction experiment explores learning without labels. This is an early experiment within ViT, distinct from the later MAE design.
+
+## 5 Conclusion
+
+Large-scale pretraining can compensate for weaker built-in visual priors.
+
+## Appendix notes
+
+Training details, head/position ablations, and additional attention analyses support the main experiments.

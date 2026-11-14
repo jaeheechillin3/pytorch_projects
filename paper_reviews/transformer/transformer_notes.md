@@ -3,17 +3,27 @@
 > **Authors:** Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser, Illia Polosukhin\
 > **Institutions:** Google Brain, Google Research, University of Toronto\
 > **Publication:** NeurIPS 2017\
-> **Link:** https://arxiv.org/abs/1706.03762
+> **Link:** [https://arxiv.org/abs/1706.03762](https://arxiv.org/abs/1706.03762)
 
-## Abstract & Introduction
+*Draft — follows the paper's main section order; appendices are condensed.*
+
+## Abstract
+
+The Transformer replaces recurrence with attention in an encoder–decoder translation model.
+
+## 1 Introduction
 
 Recurrent neural networks (RNNs) have long been the architecture of choice for natural language processing tasks such as machine translation. However, the sequential RNNs have two large shortcomings: parallelization is difficult, and relationships between far apart tokens are difficult to model. There have been attempts to use convolutional neural networks (CNNs) alongside RNNs in order to reduce sequential computation. 
 
 This paper proposes the Transformer, a model that relies entirely on the attention mechanism to model global dependencies between input and output sequences. Without reliance on any recurrence or convolution, the model achieves significantly more parallelization and reaches state of the art results on machine translation benchmarks. 
 
-## Methods
+## 2 Background
 
-### Model architecture
+Earlier recurrent models impose sequential computation. Convolutions reduce sequential dependence but require multiple layers to connect distant positions.
+
+## 3 Model Architecture
+
+### 3.1 Encoder and Decoder Stacks
 
 The Transformer uses an encoder-decoder architecture: the encoder maps the source sequence to contextual representations, and the decoder generates the output one token at a time, conditioned on these representations and the previously generated tokens.
 
@@ -23,7 +33,9 @@ The Transformer uses an encoder-decoder architecture: the encoder maps the sourc
 
 The base model has six encoder and six decoder layers, with $`d_{\mathrm{model}}=512`$. Each encoder layer contains multi-head self-attention and a position-wise feed-forward network. Each decoder layer contains masked self-attention, encoder-decoder attention, and a feed-forward network. Every sublayer uses a residual connection followed by layer normalization. The decoder inputs are shifted right by one token; together with causal masking, this prevents predictions from accessing the target token being predicted or later tokens. Training processes target positions in parallel, while generation proceeds sequentially.
 
-### Scaled dot-product attention
+### 3.2 Attention
+
+#### 3.2.1 Scaled Dot-Product Attention
 
 <p align="center">
   <img src="./images/figure2.1.png" alt="Scaled dot-product attention" width="150">
@@ -42,7 +54,7 @@ Softmax operates across each row of the score matrix. In self-attention, the mat
 
 Assuming independent query and key components with zero mean and unit variance, their dot product has variance $`d_k`$. Dividing by $`\sqrt{d_k}`$ prevents large scores from pushing softmax into regions with small gradients. Dot-product attention also benefits from efficient matrix multiplication.
 
-### Multi-head attention
+#### 3.2.2 Multi-Head Attention
 
 <p align="center">
   <img src="./images/figure2.2.png" alt="Multi-head attention" width="200">
@@ -62,11 +74,19 @@ Each head applies separate learned projections before computing attention. The o
 
 Different heads can attend to different positions and representation subspaces. The base model uses eight heads with $`d_k=d_v=64`$. Their outputs concatenate to 512 dimensions. Smaller dimensions per head keep the total computational cost similar to one head at full dimensionality.
 
-### Position-wise feed-forward networks
+#### 3.2.3 Applications of Attention in Our Model
+
+Encoder self-attention connects source positions. Masked decoder self-attention connects available target positions. Encoder–decoder attention uses decoder queries with encoder keys and values.
+
+### 3.3 Position-wise Feed-Forward Networks
 
 Each layer applies two linear transformations with a ReLU activation function in between. The network expands from 512 to 2048 dimensions and returns to 512. Attention mixes information across tokens; the feed-forward network transforms each token independently.
 
-### Positional encoding
+### 3.4 Embeddings and Softmax
+
+Learn token embeddings and share specified embedding/output weights. Scale embeddings by $\sqrt{d_{\mathrm{model}}}$ before adding positional encodings.
+
+### 3.5 Positional Encoding
 
 Because self-attention alone does not encode order, positional vectors are added to embeddings at the bottoms of both stacks:
 
@@ -80,13 +100,34 @@ PE_{(p,2j+1)}=\cos\left(\frac{p}{10000^{2j/d_{\mathrm{model}}}}\right).
 
 Here $`p`$ denotes position and $`j`$ indexes sine-cosine pairs. Different frequencies encode position at different scales. For fixed offset $`k`$, the encoding at $`p+k`$ is a linear transformation of the encoding at $`p`$, motivating their use for relative positions. Learned positional embeddings performed similarly; sinusoids were chosen for possible extrapolation to longer sequences.
 
-### Training 
+## 4 Why Self-Attention
 
-The model was trained on the WMT 2014 English-German dataset and the WMT 2014 English-French dataset, containing 4.5 million and 36 million sentences each. The Adam optimizer, residual dropout and label smoothing was used. The model was trained on eight NVIDIA P100 GPUs. 
+Compare per-layer computation, sequential operations, and maximum dependency-path length. Self-attention gives direct token-to-token connections but quadratic attention matrices.
 
-## Results
+## 5 Training
 
-### Translation quality and efficiency
+### 5.1 Training Data and Batching
+
+The model was trained on the WMT 2014 English-German dataset and the WMT 2014 English-French dataset, containing 4.5 million and 36 million sentences each. ### 5.2 Hardware and Schedule
+
+The model was trained on eight NVIDIA P100 GPUs.
+
+### 5.3 Optimizer
+
+Use Adam with warmup followed by inverse-square-root learning-rate decay:
+
+```math
+\mathrm{lr}=d_{\mathrm{model}}^{-1/2}
+\min\!\left(s^{-1/2},s\,s_{\mathrm{warmup}}^{-3/2}\right).
+```
+
+### 5.4 Regularization
+
+Use residual dropout and label smoothing. 
+
+## 6 Results
+
+### 6.1 Machine Translation
 
 The Transformer achieves state-of-the-art BLEU scores on both English-to-German and English-to-French translation tasks as the fraction of the training cost. 
 
@@ -96,7 +137,11 @@ The Transformer achieves state-of-the-art BLEU scores on both English-to-German 
 
 <p align="center"><em>Table 2. BLEU scores and training costs of English-to-German and English-to-French translation models.</em></p>
 
-### English Constituency Parsing
+### 6.2 Model Variations
+
+Ablate attention-head count, key dimensions, model width, dropout, and positional encodings.
+
+### 6.3 English Constituency Parsing
 
 In order to evaluate the Transformer for other NLP tasks, its performance on English constituency parsing was experimented. The Wall Street Journal (WSJ) portion of the Penn Treebank and BerkeleyParser datasets were used. Despite the lack of task-specific tuning, the Transformer outperformed all previous models except one. 
 
@@ -106,3 +151,11 @@ In order to evaluate the Transformer for other NLP tasks, its performance on Eng
 
 <p align="center"><em>Table 4. English constituency parsing results. </em></p>
 
+
+## 7 Conclusion
+
+Attention alone supports competitive sequence transduction with greater training parallelism.
+
+## Additional notes
+
+The final attention visualizations illustrate head behavior; they are qualitative probes rather than causal explanations.
