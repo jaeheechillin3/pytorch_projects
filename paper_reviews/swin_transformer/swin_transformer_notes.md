@@ -5,8 +5,6 @@
 > **Publication:** ICCV 2021\
 > **Link:** [https://arxiv.org/abs/2103.14030](https://arxiv.org/abs/2103.14030)
 
-*Draft — follows the paper's main section order; appendices are condensed.*
-
 ## Abstract
 
 Swin builds a hierarchical vision backbone using local self-attention and shifted window partitions. It targets classification, detection, and segmentation within one architecture.
