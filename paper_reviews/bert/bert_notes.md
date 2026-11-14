@@ -5,31 +5,11 @@
 > **Publication:** NAACL 2019\
 > **Link:** [https://arxiv.org/abs/1810.04805](https://arxiv.org/abs/1810.04805)
 
-*Draft — follows the paper's main section order; appendices are condensed.*
+## Abstract & Introduction 
 
-## Abstract
+This paper introduces the Bidirectional Encoder Representations from Transformers, or BERT. The model incorporates both left and right context to produce rich representations. After being pretrained on unlabeled text, it can be fine-tuned for a large variety of natural language processing tasks. This approach of pretraining followed by fine-tuning can replace and outperform many task-specific architectures; BERT achieves state-of-the-art performance on eleven different NLP tasks. 
 
-BERT learns contextual representations by pretraining a bidirectional Transformer on unlabeled text, then adapting it to supervised tasks. The central contribution is a training framework that makes one encoder useful across different prediction problems with minimal architectural changes.
-
-## 1 Introduction
-
-Masked prediction enables both left and right context during pretraining. Corrupting inputs prevents trivial prediction from the target token itself. A left-to-right model cannot use future context when representing a token. BERT instead lets information from both sides interact throughout the encoder, which is particularly useful when the output depends on an individual token's context.
-
-## 2 Related Work
-
-### 2.1 Unsupervised Feature-based Approaches
-
-ELMo transfers contextual features into task-specific models. Its left-to-right and right-to-left language models are trained separately, and their representations are combined afterward. This differs from allowing both directions to interact within every layer of one pretrained encoder.
-
-### 2.2 Unsupervised Fine-tuning Approaches
-
-GPT transfers pretrained parameters through fine-tuning. BERT follows this general adaptation strategy but changes the pretraining objective and attention constraints. The comparison distinguishes how representations are learned from how they are transferred.
-
-### 2.3 Transfer Learning from Supervised Data
-
-Supervised pretraining is another route to transferable representations. The paper connects language pretraining to the established vision practice of initializing downstream models with representations learned on a large dataset.
-
-## 3 BERT
+## Methods 
 
 A bidirectional encoder consumes summed token, segment, and position embeddings. [CLS] supplies a sequence-level output, while [SEP] separates packed segments. BERT-Base uses 12 layers, hidden width 768, and 12 attention heads. BERT-Large uses 24 layers, width 1024, and 16 heads. WordPiece tokenization represents inputs as subword units. Segment embeddings identify which of two packed text spans a token belongs to; position embeddings supply sequence order.
 
@@ -108,11 +88,3 @@ Larger models improve downstream results, including tasks with few labeled examp
 ### 5.3 Feature-based Approach with BERT
 
 Test frozen features on named-entity recognition as an alternative to full fine-tuning. Frozen contextual representations remain useful, showing that the pretrained model can also supply features when updating all its parameters is undesirable.
-
-## 6 Conclusion
-
-Pretraining reduces task-specific architectural engineering. For broader representation learning, the reusable ideas are corruption-based prediction, contextual interaction throughout the encoder, and adapting one pretrained backbone through small task-specific outputs.
-
-## Appendix notes
-
-Masking alternatives, training schedules, and fine-tuning details complement the main comparisons.
