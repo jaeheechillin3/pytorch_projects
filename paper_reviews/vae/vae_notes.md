@@ -89,9 +89,21 @@ _Qualitative summary of Figures 2–3 and Section 5._ The experiments support ef
 
 ### Learned manifolds
 
-| Dataset | Visualization | Observation |
-| --- | --- | --- |
-| MNIST | <img src="https://arxiv.org/html/1312.6114v11/mnist_20x20.png" alt="MNIST manifold from a two-dimensional VAE" width="240"> | Neighboring latent coordinates decode to gradual changes in digit appearance |
-| Frey Face | <img src="https://arxiv.org/html/1312.6114v11/freyface_10x10.png" alt="Frey Face manifold from a two-dimensional VAE" width="240"> | Nearby codes vary smoothly in expression and appearance |
+<p align="center">
+  <img src="https://arxiv.org/html/1312.6114v11/mnist_20x20.png" alt="MNIST manifold from a two-dimensional VAE" width="450">
+</p>
+
+<p align="center"><em>Figure 4(b). Learned MNIST manifold.</em></p>
+
+Neighboring latent coordinates decode to gradual changes in digit appearance.
+
+<p align="center">
+  <img src="https://arxiv.org/html/1312.6114v11/freyface_10x10.png" alt="Frey Face manifold from a two-dimensional VAE" width="450">
+</p>
+
+<p align="center"><em>Figure 4(a). Learned Frey Face manifold.</em></p>
+
+Nearby codes vary smoothly in expression and appearance.
+
 
 _Figure 4, shown as separate panels._ The two-dimensional examples make the continuity of the learned generative mapping visible.

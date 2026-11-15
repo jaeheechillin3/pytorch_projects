@@ -95,8 +95,12 @@ _Selected results from Table 4, ViT Mask R-CNN._ Masked pixel prediction improve
 
 ### Reconstruction
 
-| Masked input → reconstruction → target | Finding |
-| --- | --- |
-| <img src="https://arxiv.org/html/2111.06377v3/samples.png" alt="Figure 2: masked images, reconstructions, and targets" width="420"> | The decoder produces plausible completions despite seeing only 20% of patches |
+<p align="center">
+  <img src="https://arxiv.org/html/2111.06377v3/samples.png" alt="Figure 2: masked images, reconstructions, and targets" width="700">
+</p>
 
-_Figure 2 uses 80% masking._ Plausible hidden content can differ from the original image.
+<p align="center"><em>Figure 2. Masked inputs, reconstructions, and original images at 80% masking.</em></p>
+
+The decoder produces plausible completions despite seeing only 20% of patches. Plausible hidden content can differ from the original image.
+
+

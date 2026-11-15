@@ -54,10 +54,29 @@ _Selected results from Table 2._ The discriminator also learns useful features w
 
 ### Learned representations
 
-| Evidence | Finding |
-| --- | --- |
-| <img src="https://arxiv.org/html/1511.06434v2/lsun_five_epochs_guided.png" alt="Figure 5: learned and random discriminator features" width="320"> | Learned filters respond to recognizable structures such as beds |
-| <img src="./images/figure4.png" alt="Figure 4: latent interpolation" width="320"> | Nearby latent vectors decode into gradual changes in room layout |
-| <img src="./images/figure7.png" alt="Figure 7: semantic vector arithmetic" width="320"> | Arithmetic on averaged codes changes visual attributes |
+<p align="center">
+  <img src="https://arxiv.org/html/1511.06434v2/lsun_five_epochs_guided.png" alt="Figure 5: learned and random discriminator features" width="650">
+</p>
+
+<p align="center"><em>Figure 5. learned and random discriminator features.</em></p>
+
+Learned filters respond to recognizable structures such as beds.
+
+<p align="center">
+  <img src="./images/figure4.png" alt="Figure 4: latent interpolation" width="650">
+</p>
+
+<p align="center"><em>Figure 4. latent interpolation.</em></p>
+
+Nearby latent vectors decode into gradual changes in room layout.
+
+<p align="center">
+  <img src="./images/figure7.png" alt="Figure 7: semantic vector arithmetic" width="650">
+</p>
+
+<p align="center"><em>Figure 7. semantic vector arithmetic.</em></p>
+
+Arithmetic on averaged codes changes visual attributes.
+
 
 _Figures 4–5 and 7._ The generator and discriminator learn structure beyond the binary training label.

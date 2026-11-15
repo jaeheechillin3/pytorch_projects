@@ -77,10 +77,29 @@ _Table 2._ JFT-pretrained ViTs match or improve the CNN baseline while using sub
 
 ### Scaling and learned spatial structure
 
-| Evidence | Finding |
-| --- | --- |
-| <img src="./images/figure3.jpg" alt="Figure 3: accuracy versus dataset size" width="280"> | Larger datasets allow ViTs to overtake CNNs and larger ViTs to overtake smaller ones |
-| <img src="./images/figure5.jpg" alt="Figure 5: accuracy versus pretraining compute" width="320"> | ViTs have a favorable accuracy–compute relationship on the shared JFT dataset |
-| <img src="./images/figure6.jpg" alt="Figure 6: output-token attention over images" width="220"> | Attention aggregates information over image regions relevant to the classification |
+<p align="center">
+  <img src="./images/figure3.jpg" alt="Figure 3: accuracy versus dataset size" width="650">
+</p>
+
+<p align="center"><em>Figure 3. accuracy versus dataset size.</em></p>
+
+Larger datasets allow ViTs to overtake CNNs and larger ViTs to overtake smaller ones.
+
+<p align="center">
+  <img src="./images/figure5.jpg" alt="Figure 5: accuracy versus pretraining compute" width="650">
+</p>
+
+<p align="center"><em>Figure 5. accuracy versus pretraining compute.</em></p>
+
+ViTs have a favorable accuracy–compute relationship on the shared JFT dataset.
+
+<p align="center">
+  <img src="./images/figure6.jpg" alt="Figure 6: output-token attention over images" width="350">
+</p>
+
+<p align="center"><em>Figure 6. output-token attention over images.</em></p>
+
+Attention aggregates information over image regions relevant to the classification.
+
 
 _Figures 3, 5–6._ Scaling supplies the performance gains, while the learned attention shows how information is integrated over the image.

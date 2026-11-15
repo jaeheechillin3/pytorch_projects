@@ -73,8 +73,13 @@ _Table 1._ Attention improves both encoder–decoder baselines; the longer-train
 
 ### Sentence length and alignment
 
-| Evidence | Finding |
-| --- | --- |
-| <img src="./images/figure2.jpeg" alt="Figure 2: BLEU versus sentence length" width="260"> | Attention substantially reduces degradation on long sentences |
+<p align="center">
+  <img src="./images/figure2.jpeg" alt="Figure 2: BLEU versus sentence length" width="650">
+</p>
+
+<p align="center"><em>Figure 2. BLEU versus sentence length.</em></p>
+
+Attention substantially reduces degradation on long sentences.
+
 
 _Figure 2._ Attention reduces the degradation on longer sentences.

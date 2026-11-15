@@ -97,8 +97,13 @@ _Qualitative summary of Sections 4–5._ The results connect the training design
 
 ### Attention maps
 
-| Evidence | Finding |
-| --- | --- |
-| <img src="https://arxiv.org/html/2104.14294v2/attn6.png" alt="Figure 1: DINO class-token attention" width="420"> | Several heads highlight coherent foreground objects |
+<p align="center">
+  <img src="https://arxiv.org/html/2104.14294v2/attn6.png" alt="Figure 1: DINO class-token attention" width="650">
+</p>
+
+<p align="center"><em>Figure 1. DINO class-token attention.</em></p>
+
+Several heads highlight coherent foreground objects.
+
 
 _Figure 1._ The spatial structure emerges without segmentation supervision.
