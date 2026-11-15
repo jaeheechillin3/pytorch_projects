@@ -5,14 +5,17 @@
 > **Publication:** ICLR 2021\
 > **Link:** [https://arxiv.org/abs/2010.08895](https://arxiv.org/abs/2010.08895)
 
-
 ## Abstract & Introduction
 
-Many scientific problems require solving the same partial differential equation (PDE) repeatedly for different initial conditions or coefficients. A numerical solver computes each solution separately, which becomes expensive when thousands of evaluations are needed.
-
-This paper proposes the Fourier Neural Operator (FNO), which learns a mapping between input and solution functions from data. Once trained, the same network predicts solutions for new inputs. Fourier-domain parameterization makes the integral layers efficient and allows the learned parameters to be used at different grid resolutions.
+Repeatedly solving a PDE for new coefficients or initial conditions is expensive. The Fourier Neural Operator learns the mapping from input functions to solution functions, using spectral layers to mix information across the domain efficiently. A trained model can then predict new solutions and transfer between compatible grid resolutions, making repeated forward evaluations much cheaper.
 
 ## Methods
+
+<p align="center">
+  <img src="./images/architecture.svg" alt="A Fourier layer combines global and pointwise operations" width="750">
+</p>
+
+<p align="center"><em>The spectral branch mixes information globally; the pointwise branch acts locally. Schematic based on the paper.</em></p>
 
 ### Learning operators
 
@@ -58,32 +61,33 @@ The spectral branch communicates globally across the grid. The pointwise branch 
 
 For a fixed number of retained modes and feature channels, the FFT gives approximately $O(n\log n)$ complexity in the number of grid points. The same spectral weights can be applied on compatible grids of different resolutions.
 
+<p align="center">
+  <img src="https://arxiv.org/html/2010.08895v3/figs/fourier_full_arch5.png" alt="Figure 2: complete Fourier neural operator architecture" width="650">
+</p>
+
+<p align="center"><em>Figure 2. Lifting, repeated Fourier layers, and projection back to the solution field.</em></p>
+
 ## Results
 
-### Burgers' equation
+### Navier–Stokes prediction
 
-The first experiment learns a map from an initial velocity field to the solution at a later time. Burgers' equation combines nonlinear advection and diffusion. FNO maintains low error across the tested resolutions and outperforms the compared finite-dimensional and operator-learning baselines.
+| Model | ν = 10⁻³, N = 1,000 | ν = 10⁻⁴, N = 1,000 | ν = 10⁻⁴, N = 10,000 | ν = 10⁻⁵, N = 1,000 |
+| --- | ---: | ---: | ---: | ---: |
+| FNO-3D | 0.0086 | 0.1918 | 0.0820 | 0.1893 |
+| FNO-2D | 0.0128 | 0.1559 | 0.0834 | 0.1556 |
+| U-Net | 0.0245 | 0.2051 | 0.1190 | 0.1982 |
+| TF-Net | 0.0225 | 0.2253 | 0.1168 | 0.2268 |
+| ResNet | 0.0701 | 0.2871 | 0.2311 | 0.2753 |
 
-### Darcy flow
+_Table 1, relative prediction error ↓ at 64×64 spatial resolution; N is the training-set size._ FNO-3D leads with sufficient data, while FNO-2D performs better in the harder, smaller-data settings.
 
-The second experiment maps a permeability field to the pressure solving a steady elliptic PDE:
+### Resolution transfer and additional problems
 
-```math
--\nabla\cdot(a(x)\nabla u(x))=f(x).
-```
+| Experiment | Input → output | Reported result |
+| --- | --- | --- |
+| Burgers' equation | Initial velocity → later velocity | Low error remains stable across the tested resolutions |
+| Darcy flow | Permeability → pressure | Strong accuracy across grid resolutions |
+| Zero-shot super-resolution | Train at 64×64×20 → evaluate at 256×256×80 | Space-time resolution transfer without retraining |
+| Bayesian inverse problem | Repeated forward solves inside MCMC | Surrogate posterior estimates closely match the numerical-solver estimates |
 
-The experiment uses square-domain inputs with specified boundary conditions. It tests whether the network can infer a complete solution field from a spatially varying coefficient. FNO again performs well as the sampling resolution changes.
-
-### Navier–Stokes equation
-
-The time-dependent experiment predicts future vorticity from an observed initial sequence. FNO-2D performs spatial operations and advances recurrently in time; FNO-3D performs operations across space and time to predict a trajectory together.
-
-At viscosity $10^{-3}$ with 1,000 training examples, FNO-3D achieves **0.0086 relative error**, compared with 0.0245 for U-Net. At viscosity $10^{-4}$, increasing the training set from 1,000 to 10,000 examples reduces FNO-3D's error from 0.1918 to 0.0820. More difficult dynamics require more data, and FNO-2D performs better in some of the smaller-data settings.
-
-### Zero-shot super-resolution
-
-A model trained on a $64\times64\times20$ space-time grid is evaluated on a $256\times256\times80$ grid without retraining. The predicted flow remains close to the higher-resolution reference. This demonstrates transfer between discretizations of the studied problem.
-
-### Bayesian inverse problem
-
-The trained operator also replaces repeated numerical forward solves inside a Bayesian inverse problem. Fast forward evaluations make posterior sampling more practical. The saving applies after the cost of producing training solutions and training the network has been paid.
+_Summary of Sections 5.1–5.5._ The same spectral parameterization supports both fast repeated prediction and evaluation on finer compatible grids.

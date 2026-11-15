@@ -5,14 +5,17 @@
 > **Publication:** CVPR 2022\
 > **Link:** [https://arxiv.org/abs/2201.03545](https://arxiv.org/abs/2201.03545)
 
-
 ## Abstract & Introduction
 
-Vision Transformers had begun to outperform conventional CNNs on image classification and dense prediction. However, these comparisons also involved different training procedures and architectural choices. Swin, for example, introduces locality and a feature hierarchy that resemble established CNN designs.
-
-This paper asks how far a standard ConvNet can go when updated with those choices. Starting from ResNet-50, the authors progressively change its training and architecture to produce ConvNeXt. The final network uses convolution throughout and competes with hierarchical Transformers on classification, detection, and segmentation.
+How much of the vision Transformer's advantage comes from attention, and how much comes from everything around it? ConvNeXt updates a ResNet with modern training, depthwise convolutions, inverted bottlenecks, larger kernels, and a simpler block design. The resulting convolutional backbone matches or exceeds Swin on classification and dense prediction, showing how much room remained in conventional ConvNets.
 
 ## Methods
+
+<p align="center">
+  <img src="./images/architecture.svg" alt="ConvNeXt residual block" width="750">
+</p>
+
+<p align="center"><em>Spatial mixing and channel mixing are separated within a residual block. Schematic based on the paper.</em></p>
 
 ### Training techniques
 
@@ -42,10 +45,10 @@ A simplified block is
 
 ```math
 x_{\mathrm{out}}
-=x+\operatorname{PW}_{\mathrm{contract}}\left(
-\operatorname{GELU}\left(
-\operatorname{PW}_{\mathrm{expand}}\left(
-\operatorname{LN}(\operatorname{DWConv}_{7\times7}(x))
+=x+\mathrm{PW}_{\mathrm{contract}}\left(
+\mathrm{GELU}\left(
+\mathrm{PW}_{\mathrm{expand}}\left(
+\mathrm{LN}(\mathrm{DWConv}_{7\times7}(x))
 \right)\right)\right).
 ```
 
@@ -57,22 +60,41 @@ ConvNeXt-T, S, B, L, and XL vary stage depths and channel widths. Classification
 
 ## Results
 
-### ImageNet classification
+### ImageNet-1K classification
 
-At $224\times224$ resolution with ImageNet-1K training, ConvNeXt-T reaches **82.1% top-1 accuracy**, compared with Swin-T's 81.3%, at approximately the same FLOPs. ConvNeXt-B reaches **83.8%**, compared with Swin-B's 83.5%.
+| Model | Pretraining data | Input | Top-1 accuracy ↑ |
+| --- | --- | --- | ---: |
+| Swin-T | ImageNet-1K | 224² | 81.3 |
+| ConvNeXt-T | ImageNet-1K | 224² | 82.1 |
+| Swin-B | ImageNet-1K | 224² | 83.5 |
+| ConvNeXt-B | ImageNet-1K | 224² | 83.8 |
+| Swin-L | ImageNet-22K | 384² | 87.3 |
+| ConvNeXt-L | ImageNet-22K | 384² | 87.5 |
+| ConvNeXt-XL | ImageNet-22K | 384² | 87.8 |
 
-ImageNet-22K pretraining and higher-resolution fine-tuning improve larger models further. ConvNeXt-XL reaches **87.8%** at $384\times384$. This result uses more pretraining data and a larger model than the ImageNet-1K-only comparisons.
+_Selected results from Table 1._ ConvNeXt is competitive across model sizes under matched pretraining and resolution settings.
 
-### Isotropic models
+### Constant-resolution backbones
 
-The paper also studies ConvNeXt variants that preserve one spatial resolution throughout the network, as ViT does. Their competitive results indicate that the updated convolutional block is useful beyond the hierarchical version.
+| Model | Parameters | GFLOPs | ImageNet top-1 ↑ |
+| --- | ---: | ---: | ---: |
+| ViT-S | 22M | 4.6 | 79.8 |
+| Isotropic ConvNeXt-S | 22M | 4.3 | 79.7 |
+| ViT-B | 87M | 17.6 | 81.8 |
+| Isotropic ConvNeXt-B | 87M | 16.9 | 82.0 |
+| ViT-L | 304M | 61.6 | 82.6 |
+| Isotropic ConvNeXt-L | 306M | 59.7 | 82.6 |
 
-### Detection and segmentation
+_Selected results from Table 2, ImageNet-1K at 224²._ The updated block remains competitive when the feature hierarchy is removed.
 
-ConvNeXt transfers well to COCO object detection and instance segmentation, and to ADE20K semantic segmentation. These experiments use the backbone's intermediate feature maps at several resolutions. Its gains therefore extend beyond image-level classification.
+### COCO detection and instance segmentation
 
-### Efficiency
+| Framework / backbone | Box AP ↑ | Mask AP ↑ |
+| --- | ---: | ---: |
+| Mask R-CNN / Swin-T | 46.0 | 41.6 |
+| Mask R-CNN / ConvNeXt-T | 46.2 | 41.7 |
+| Cascade Mask R-CNN / ResNet-50 | 46.3 | 40.1 |
+| Cascade Mask R-CNN / Swin-T | 50.4 | 43.7 |
+| Cascade Mask R-CNN / ConvNeXt-T | 50.4 | 43.7 |
 
-ConvNeXt uses standard convolutional operations and requires no window partitioning or relative-position interpolation. The measured speed advantage depends on the hardware and implementation. The A100 experiments show a larger throughput advantage over Swin than the V100 experiments, despite similar theoretical FLOPs.
-
-The results show that a carefully updated ConvNet remains a strong visual backbone. Modern training and architecture choices account for much of the progress that had accompanied the adoption of Transformers.
+_Selected results from Table 3, 3× schedules._ Classification gains transfer to dense prediction, where ConvNeXt-T matches or slightly exceeds Swin-T in these comparisons.

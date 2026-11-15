@@ -5,16 +5,17 @@
 > **Publication:** NAACL 2019\
 > **Link:** [https://arxiv.org/abs/1810.04805](https://arxiv.org/abs/1810.04805)
 
-
 ## Abstract & Introduction
 
-This paper introduces Bidirectional Encoder Representations from Transformers, or BERT. The model incorporates both left and right context to produce representations that can be adapted to many natural language processing tasks. After pretraining on unlabeled text, the same model architecture is fine-tuned with a small task-specific output layer.
-
-Earlier fine-tuning approaches such as GPT used left-to-right language modeling. Each token could therefore attend only to earlier tokens, limiting the context available for tasks such as question answering. ELMo combined separately trained forward and backward language models. BERT instead allows both directions to interact at every layer.
-
-BERT achieves state-of-the-art results on eleven NLP tasks. Its contribution is a pretraining procedure that makes a deeply bidirectional Transformer useful across sentence-level and token-level applications.
+A word's meaning depends on what comes before and after it. BERT pretrains a deeply bidirectional Transformer using masked language modeling and next sentence prediction, then fine-tunes the same encoder for different language tasks. This simple transfer procedure improves eleven NLP benchmarks and greatly reduces the need to design a separate architecture for each task.
 
 ## Methods
+
+<p align="center">
+  <img src="./images/architecture.svg" alt="One encoder, two pretraining objectives" width="750">
+</p>
+
+<p align="center"><em>BERT shares an encoder across masked-token and sentence-pair pretraining. Schematic based on the paper.</em></p>
 
 ### Model architecture and input representations
 
@@ -61,33 +62,26 @@ Fine-tuning initializes the encoder from these weights and updates all parameter
 
 ## Results
 
-### GLUE
+### Language understanding
 
-BERT improves results across sentence classification and sentence-pair tasks. BERT-Large achieves an official GLUE score of **80.5**. The paper's Table 1 reports individual tasks and an average excluding WNLI, so that table average differs from the official benchmark score.
+| Benchmark | Model / setting | Test score ↑ |
+| --- | --- | ---: |
+| GLUE, official benchmark | BERT-Large | 80.5 |
+| SQuAD v1.1, F1 | BERT-Large, single + TriviaQA | 91.8 |
+| SQuAD v1.1, F1 | BERT-Large, ensemble + TriviaQA | 93.2 |
+| SQuAD v2.0, F1 | BERT-Large, single | 83.1 |
+| SWAG, accuracy | OpenAI GPT | 78.0 |
+| SWAG, accuracy | BERT-Large | 86.3 |
 
-### SQuAD v1.1 and v2.0
+_Selected results from the abstract and Tables 2–4._ BERT transfers to both sentence-level and token-level tasks; the strongest SQuAD v1.1 result also uses ensembling and TriviaQA adaptation.
 
-For extractive question answering, the input combines a question with its passage. Learned vectors score each passage token as a possible start or end of the answer:
+### Pretraining objectives
 
-```math
-P_{\mathrm{start}}(i)=
-\frac{\exp(S^\top T_i)}{\sum_j\exp(S^\top T_j)},\qquad
-P_{\mathrm{end}}(i)=
-\frac{\exp(E^\top T_i)}{\sum_j\exp(E^\top T_j)}.
-```
+| BERT-Base variant | MNLI-m accuracy ↑ | QNLI accuracy ↑ | SQuAD dev F1 ↑ |
+| --- | ---: | ---: | ---: |
+| MLM + NSP | 84.4 | 88.4 | 88.5 |
+| MLM, no NSP | 83.9 | 84.9 | 87.9 |
+| Left-to-right LM, no NSP | 82.1 | 84.3 | 77.8 |
+| Left-to-right LM + BiLSTM, no NSP | 82.1 | 84.1 | 84.9 |
 
-The predicted answer is a valid span with a high combined endpoint score. The SQuAD v1.1 ensemble achieves **93.2 test F1**.
-
-SQuAD v2.0 also contains unanswerable questions. Training uses [CLS] as the start and end for these examples. At inference, its score is compared with the best answer span using a tuned threshold. BERT-Large reaches **83.1 test F1**.
-
-### SWAG
-
-Each of four candidate continuations is paired with the context and scored from [CLS]. Selecting the highest score gives **86.3% test accuracy** for BERT-Large.
-
-### Ablation studies
-
-Removing NSP reduces performance on several tasks. In the BERT-Base ablation, QNLI accuracy falls from 88.4 to 84.9. Replacing masked pretraining with left-to-right modeling hurts more strongly on token-level tasks: SQuAD F1 falls from 88.5 to 77.8.
-
-Larger pretrained models also improve downstream results, including on MRPC, which has only about 3,600 training examples. A feature-based experiment on named-entity recognition finds that frozen BERT features remain useful, although full fine-tuning performs better.
-
-The paper's [Figures 1–2 and Tables 1–6](https://arxiv.org/pdf/1810.04805) present the input format, task adaptations, and benchmark comparisons.
+_Selected development results from Table 5._ Bidirectional pretraining is particularly useful for answer-span prediction; adding a BiLSTM only at fine-tuning does not recover the full gain.

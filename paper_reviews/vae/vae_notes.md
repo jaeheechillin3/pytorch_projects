@@ -5,14 +5,17 @@
 > **Publication:** ICLR 2014\
 > **Link:** https://arxiv.org/abs/1312.6114
 
-
 ## Abstract & Introduction
 
-Latent-variable models assume that an observation is generated from an unobserved representation. A simple prior can be sampled easily, while a neural network maps each latent sample to a distribution over observations. The difficulty is learning the model: evaluating an observation's likelihood requires integrating over the latent variable, and the exact posterior is generally intractable.
-
-This paper introduces Auto-Encoding Variational Bayes (AEVB), which jointly learns a generative model and an approximate inference model. Its Stochastic Gradient Variational Bayes (SGVB) estimator makes the variational objective differentiable through latent samples. A variational auto-encoder (VAE) is an application of this method using neural networks as the encoder and decoder.
+Learning a latent-variable model becomes difficult when its posterior and marginal likelihood cannot be evaluated directly. Auto-Encoding Variational Bayes jointly trains a generative model and a probabilistic encoder by optimizing a variational lower bound. Reparameterizing latent samples makes the objective differentiable through both networks, yielding an efficient method for inference, representation learning, and generation.
 
 ## Methods
+
+<p align="center">
+  <img src="./images/architecture.svg" alt="Reparameterization connects the encoder to the reconstruction loss" width="750">
+</p>
+
+<p align="center"><em>Independent noise makes latent sampling differentiable with respect to encoder outputs. Schematic based on the paper.</em></p>
 
 ### Generative model and probabilistic encoder
 
@@ -48,7 +51,7 @@ The first term rewards explaining the observation from its latent representation
 Directly sampling from a distribution whose parameters depend on the encoder makes ordinary backpropagation difficult. The paper expresses the sample as a differentiable function of the parameters and independent noise. For a diagonal Gaussian encoder,
 
 ```math
-q_\phi(z\mid x)=\mathcal N\!\left(z\mid\mu_\phi(x),\operatorname{diag}(\sigma_\phi^2(x))\right),
+q_\phi(z\mid x)=\mathcal N\!\left(z\mid\mu_\phi(x),\mathrm{diag}(\sigma_\phi^2(x))\right),
 \qquad
 z=\mu_\phi(x)+\sigma_\phi(x)\odot\epsilon,\quad
 \epsilon\sim\mathcal N(0,I).
@@ -73,16 +76,22 @@ Generation uses the learned decoder after drawing a fresh latent vector from the
 
 ## Results
 
-### Likelihood lower bound
+### Inference and learning
 
-The model was evaluated on MNIST handwritten digits and Frey Face images. AEVB was compared with wake-sleep across several latent dimensions. AEVB converged faster and reached higher lower bounds in the reported experiments. Increasing the number of latent variables did not lead to the expected overfitting, which the authors attribute to regularization from the variational objective.
+| Experiment | Setting | Reported outcome |
+| --- | --- | --- |
+| Lower-bound optimization | MNIST and Frey Face; several latent dimensions | AEVB converges faster and reaches better bounds than wake-sleep |
+| Latent capacity | Increasing the number of latent variables | Extra latent dimensions do not produce the expected overfitting in the reported runs |
+| Marginal-likelihood comparison | MNIST with 3 latent dimensions | AEVB compares favorably with wake-sleep and Monte Carlo EM |
+| Likelihood-estimator reliability | Increasing latent dimension | Estimates become unreliable, restricting this comparison to low dimension |
 
-### Marginal likelihood
+_Qualitative summary of Figures 2–3 and Section 5._ The experiments support efficient optimization, while the evaluation itself becomes harder in larger latent spaces.
 
-A separate experiment compared estimated marginal likelihoods against wake-sleep and Monte Carlo EM. This evaluation used only three latent dimensions because the likelihood estimator became unreliable in larger latent spaces. The experiment supports the optimization results while also showing the difficulty of evaluating latent-variable models directly.
+### Learned manifolds
 
-### Learned latent space
+| Dataset | Visualization | Observation |
+| --- | --- | --- |
+| MNIST | <img src="https://arxiv.org/html/1312.6114v11/mnist_20x20.png" alt="MNIST manifold from a two-dimensional VAE" width="240"> | Neighboring latent coordinates decode to gradual changes in digit appearance |
+| Frey Face | <img src="https://arxiv.org/html/1312.6114v11/freyface_10x10.png" alt="Frey Face manifold from a two-dimensional VAE" width="240"> | Nearby codes vary smoothly in expression and appearance |
 
-With two latent dimensions, the decoder can be evaluated over a grid to visualize the learned manifold. The MNIST and Frey Face examples show gradual changes in digit appearance and facial expression. These visualizations illustrate how a continuous latent representation organizes observations.
-
-The paper's [Figures 2–3 and Appendix A](https://arxiv.org/pdf/1312.6114) show the optimization comparisons and latent-space visualizations.
+_Figure 4, shown as separate panels._ The two-dimensional examples make the continuity of the learned generative mapping visible.

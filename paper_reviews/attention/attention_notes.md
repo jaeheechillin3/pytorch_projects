@@ -7,11 +7,15 @@
 
 ## Abstract & Introduction
 
-Previous machine translation systems consisted of many smaller subcomponents. A new approach called _neural machine translation_ uses a single neural network to read a sentence and output a translation. Most neural machine translation models are encoder-decoders where a sentence is transformed into a _fixed-length_ encoding vector, from which the translation is outputted. The problem with this approach is that it is difficult to compress all the information into a fixed-length vector for very long sentences. 
+Compressing an entire sentence into one vector makes early neural translation models struggle with long inputs. Bahdanau et al. replace that bottleneck with attention: a bidirectional encoder retains a representation at every source position, and the decoder learns which positions matter for each target word. Alignment and translation are trained together, improving English-to-French translation and making the learned correspondences visible.
 
-To address this issue, the paper proposes an "attention" mechanism that for each target word, identifies the most relevant words in the original sentence. Each new target word is produced based on its "context vectors" as well as the previously generated target words.
+## Methods
 
-## Method 
+<p align="center">
+  <img src="./images/architecture.svg" alt="Attention retrieves source information at every target step" width="750">
+</p>
+
+<p align="center"><em>Attention forms a new weighted context for each generated word. Schematic based on the paper.</em></p>
 
 ### Decoder
 
@@ -51,36 +55,27 @@ The dimension of $`c_i`$ remains fixed, but its contents change at each step. At
 
 ### Encoder: a Bidirectional RNN 
 
-Conventional RNN-based encoders have the limitation that each word annotation describes only the preceding works and not the following words. Thus a bidirectional RNN is used; one RNN reads the sequence in the give order and another in the reverse order, and the two sequences of hidden states are concatenated. Due to the RNN's tendency to better represent recent information, each word's annotation will be focused on the words around it. 
+Conventional RNN-based encoders have the limitation that each word annotation describes only the preceding words and not the following words. Thus a bidirectional RNN is used; one RNN reads the sequence in the given order and another in the reverse order, and the two sequences of hidden states are concatenated. Due to the RNN's tendency to better represent recent information, each word's annotation will be focused on the words around it. 
 
 ### Experiments 
 
-The models were training on the WMT 2014 English-to-French translation dataset. A 30,000-word vocabulary was used for each language. Four models were trained. **RNNencdec** models are conventional encoder-decoders while **RNNsearch** utilizes the attention mechanism. The suffixes "30" and "50" indicate the maximum training sentence lengths. 
-
+The models were trained on the WMT 2014 English-to-French translation dataset. A 30,000-word vocabulary was used for each language. Four models were trained. **RNNencdec** models are conventional encoder-decoders while **RNNsearch** utilizes the attention mechanism. The suffixes "30" and "50" indicate the maximum training sentence lengths.
 
 ## Results
 
-<p align="center">
-  <img src="./images/table1.jpeg" width="300">
-</p>
-
-<p align="center"><em>Table 1. Translation performances, measured in BLEU score.</em></p>
-
-Both RNNsearch-30 and RNNsearch-50 significantly outperform their RNNencdec counterparts. 
+### Translation quality
 
 <p align="center">
-  <img src="./images/figure2.jpeg" width="400">
+  <img src="./images/table1.jpeg" alt="Table 1: English–French translation BLEU scores" width="650">
 </p>
 
-<p align="center"><em>Figure 2. The BLEU scores of models varying with sentence length.</em></p>
+_Table 1._ Attention improves both encoder–decoder baselines; the longer-trained model exceeds Moses on the subset without unknown words.
 
-Attention substantially reduces the degradation seen in the fixed-vector model as sentences grow longer. RNNsearch-30 even outperforms RNNencdec-50 overall.
+### Sentence length and alignment
 
-<p align="center">
-  <img src="./images/figure3.jpeg" width="600">
-</p>
+| Evidence | Finding |
+| --- | --- |
+| <img src="./images/figure2.jpeg" alt="Figure 2: BLEU versus sentence length" width="260"> | Attention substantially reduces degradation on long sentences |
+| <img src="./images/figure3.jpeg" alt="Figure 3: learned source–target alignments" width="360"> | Soft alignments capture local correspondences and word reordering |
 
-<p align="center"><em>Figure 3. Learned alignment heatmaps. The x-axis and y-axis correspond to the source sentence (English) and generated translation (French) respectively. </em></p>
-
-A bright cell represents a large attention weight for a source–target pair. Diagonal patterns indicate similar word order; off-diagonal patterns can reflect reordering. Soft alignment also lets a target word draw on multiple source words.
-
+_Figures 2–3._ The visualizations support the motivation for retrieving a different source context at each decoder step.

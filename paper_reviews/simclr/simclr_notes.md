@@ -5,14 +5,17 @@
 > **Publication:** ICML 2020\
 > **Link:** [https://arxiv.org/abs/2002.05709](https://arxiv.org/abs/2002.05709)
 
-
 ## Abstract & Introduction
 
-Self-supervised learning aims to learn useful image representations without class labels. Contrastive methods do this by bringing related views together and separating unrelated examples. Earlier methods often required a memory bank or specialized model components.
-
-This paper introduces SimCLR, a framework built from data augmentation, an image encoder, a projection head, and a contrastive loss. Its experiments examine which choices make this simple setup effective. The composition of augmentations, a nonlinear projection head, and a large training batch all contribute substantially to representation quality.
+Useful visual features can be learned by recognizing two altered views of the same image. SimCLR combines random augmentation, a shared ResNet encoder, a nonlinear projection head, and a contrastive loss, without a memory bank. Its experiments show why augmentation, projection, and optimization matter, bringing self-supervised representations close to supervised performance on ImageNet.
 
 ## Methods
+
+<p align="center">
+  <img src="./images/architecture.svg" alt="Two views of one image form a positive pair" width="750">
+</p>
+
+<p align="center"><em>The contrastive objective acts after projection; downstream tasks retain the encoder features. Schematic based on the paper.</em></p>
 
 ### The contrastive learning framework
 
@@ -34,12 +37,12 @@ For a minibatch of $N$ images, augmentation creates $2N$ views. Each view has on
 
 ```math
 \ell_{i,j}=-\log
-\frac{\exp(\operatorname{sim}(z_i,z_j)/\tau)}
+\frac{\exp(\mathrm{sim}(z_i,z_j)/\tau)}
 {\sum_{k=1}^{2N}\mathbf 1_{[k\ne i]}
-\exp(\operatorname{sim}(z_i,z_k)/\tau)}.
+\exp(\mathrm{sim}(z_i,z_k)/\tau)}.
 ```
 
-Here $\operatorname{sim}$ is cosine similarity and $\tau$ is the temperature. The denominator includes the positive view and excludes the anchor itself. Both directions of every positive pair contribute to the batch loss:
+Here $\mathrm{sim}$ is cosine similarity and $\tau$ is the temperature. The denominator includes the positive view and excludes the anchor itself. Both directions of every positive pair contribute to the batch loss:
 
 ```math
 \mathcal L=\frac{1}{2N}\sum_{k=1}^{N}
@@ -66,14 +69,39 @@ The main evaluation freezes the encoder and trains a linear classifier on its re
 
 ## Results
 
-### ImageNet classification
+### ImageNet linear evaluation
 
-SimCLR achieves **76.5% ImageNet top-1 accuracy** with a linear classifier on a four-times-wider ResNet-50. This headline result uses a wider ResNet-50, rather than the standard-width model. It matches the reported supervised standard ResNet-50 baseline despite learning the encoder without ImageNet labels.
+| Method / backbone | Parameters | Top-1 ↑ | Top-5 ↑ |
+| --- | ---: | ---: | ---: |
+| MoCo / ResNet-50 | 24M | 60.6 | — |
+| PIRL / ResNet-50 | 24M | 63.6 | — |
+| CPC v2 / ResNet-50 | 24M | 63.8 | 85.3 |
+| SimCLR / ResNet-50 | 24M | 69.3 | 89.0 |
+| SimCLR / ResNet-50 2× | 94M | 74.2 | 92.0 |
+| SimCLR / ResNet-50 4× | 375M | 76.5 | 93.2 |
 
-### Limited labels and transfer
+_Selected results from Table 6._ The standard-width model already improves over the compared ResNet-50 methods; the 76.5% headline uses a much wider model.
 
-Fine-tuning with only 1% of the ImageNet labels reaches **85.8% top-5 accuracy**. Transfer experiments on twelve natural-image classification datasets find that SimCLR matches or exceeds the supervised baseline on ten.
+### Fine-tuning with limited labels
 
-### Ablation studies
+| Backbone | 1% labels, top-5 ↑ | 10% labels, top-5 ↑ |
+| --- | ---: | ---: |
+| Supervised ResNet-50 baseline | 48.4 | 80.4 |
+| SimCLR / ResNet-50 | 75.5 | 87.8 |
+| SimCLR / ResNet-50 2× | 83.0 | 91.2 |
+| SimCLR / ResNet-50 4× | 85.8 | 92.6 |
 
-Removing feature normalization or choosing an unsuitable temperature reduces performance. The nonlinear projection head outperforms a linear head or no head. Augmentation composition and sufficient training time also have large effects. These experiments explain why a compact framework can perform well: the training task and optimization choices determine the quality of the representation.
+_Selected results from Table 7._ Unlabeled pretraining makes the limited labeled set much more useful.
+
+### Component studies
+
+| Component | Reported finding |
+| --- | --- |
+| Cropping + color distortion | More effective together; color distortion reduces shortcuts between crops |
+| Nonlinear projection head | Improves the representation before the discarded head |
+| Feature normalization + temperature | Both are important to the contrastive objective |
+| Larger batches | Supply more negatives and improve performance |
+| Longer training | Improves performance and reduces the disadvantage of smaller batches |
+| Transfer to 12 datasets | Fine-tuned SimCLR wins on 5, ties on 5, and loses on 2 against the supervised baseline |
+
+_Summary of Sections 3–6._ Most of the gains come from designing the training task and optimization carefully.

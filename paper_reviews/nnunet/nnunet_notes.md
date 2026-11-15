@@ -5,14 +5,17 @@
 > **Publication:** Nature Methods 2021\
 > **Link:** [https://www.nature.com/articles/s41592-020-01008-z](https://www.nature.com/articles/s41592-020-01008-z)
 
-
 ## Abstract & Introduction
 
-Biomedical segmentation datasets vary in image dimensions, voxel spacing, modality, and target size. A pipeline that works well for one dataset may perform poorly on another, even when both use a U-Net. Architecture is only one part of the problem; preprocessing, training patches, loss functions, and inference settings must work together.
-
-This paper introduces nnU-Net, a framework that configures a segmentation pipeline for a new dataset automatically. It collects established design choices into a set of defaults and adaptation rules, then uses cross-validation to select the final configuration. Its backbone remains a conventional U-Net.
+A segmentation model is only as good as the pipeline around it. nnU-Net turns the many interdependent choices in biomedical segmentation—resampling, normalization, network shape, patches, training, and postprocessing—into defaults, adaptation rules, and validation decisions. A conventional U-Net configured this way performs strongly across diverse datasets, making systematic configuration a demanding baseline for new architectures.
 
 ## Methods
+
+<p align="center">
+  <img src="./images/architecture.svg" alt="Dataset properties determine a complete segmentation pipeline" width="750">
+</p>
+
+<p align="center"><em>nnU-Net infers candidate pipelines and uses validation to select the final system. Schematic based on the paper.</em></p>
 
 ### Dataset and pipeline fingerprints
 
@@ -27,7 +30,7 @@ The network uses an encoder–decoder structure with skip connections. Convoluti
 Training combines cross entropy with a Dice loss. Cross entropy supervises individual voxel predictions, while Dice measures overlap between a predicted region and its target. For one class, the overlap can be written as
 
 ```math
-\operatorname{Dice}(p,y)
+\mathrm{Dice}(p,y)
 =\frac{2\sum_i p_i y_i+\epsilon}
 {\sum_i p_i+\sum_i y_i+\epsilon}.
 ```
@@ -54,20 +57,26 @@ Inference combines predictions from overlapping patches. Weighting reduces artif
 
 ## Results
 
-### Diverse datasets
+### Breadth of evaluation
 
-The published Nature Methods article evaluates nnU-Net on **23 public datasets** spanning different modalities and segmentation targets. It performs strongly across these tasks without manual configuration for each dataset.
+| Evaluation | Scope / finding |
+| --- | --- |
+| Published journal study | 23 public datasets |
+| Imaging domains | Includes CT, MRI, and microscopy |
+| Target structures | Includes organs, tumors, lesions, and cellular structures |
+| Configuration | Automated preprocessing, architecture, training, and postprocessing |
+| Overall comparison | Surpasses most compared approaches, including specialized pipelines |
 
-The examples include organs, tumors, and microscopic structures. Their differences in scale and appearance test the framework's ability to adapt the complete pipeline.
+_Summary of the journal article's evaluation._ The same configuration framework works across substantially different image properties and segmentation targets.
 
-### Pipeline configuration
+### What drives performance?
 
-The KiTS analysis examines why successful kidney and tumor segmentation systems perform well. Differences in pipeline configuration have a substantial effect, and adding architectural components does not consistently improve over a well-configured baseline.
+| Analysis | Reported finding |
+| --- | --- |
+| KiTS pipeline comparison | Configuration details have a substantial influence on performance |
+| Architectural extensions | Added complexity does not consistently beat a well-configured U-Net |
+| Cross-dataset choices | A configuration that helps one dataset can hurt another |
+| Multi-task design | Testing across tasks provides more reliable defaults |
+| Validation-based selection | Chooses useful configurations, ensembles, and postprocessing |
 
-The result helps explain the framework's performance: its strength comes from coordinating the details that are often left to manual experimentation.
-
-### Configuration across tasks
-
-A choice that improves one dataset can hurt another. The framework therefore combines robust defaults with dataset-specific rules and validation. Evaluating decisions across multiple tasks provides a better basis for those defaults than optimizing a single benchmark.
-
-The released framework makes the configuration process available for new segmentation datasets. Detailed rules and generated pipeline examples are also described in the [author preprint](https://arxiv.org/abs/1904.08128v2).
+_Qualitative summary of the Results section._ The evidence supports coordinated pipeline design as the central contribution, rather than a particular new network block.

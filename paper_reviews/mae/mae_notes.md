@@ -5,16 +5,17 @@
 > **Publication:** CVPR 2022\
 > **Link:** [https://arxiv.org/abs/2111.06377](https://arxiv.org/abs/2111.06377)
 
-
 ## Abstract & Introduction
 
-Masked prediction has been effective for language pretraining, as demonstrated by BERT. Applying the same idea to images introduces a different problem: nearby image patches are highly redundant, so predicting a small missing region may require little understanding of the scene.
-
-This paper introduces masked autoencoders (MAEs), which reconstruct images after removing most of their patches. Two choices make this effective. A high masking ratio creates a difficult prediction task, and an asymmetric encoder–decoder architecture reduces the cost of processing the corrupted image.
-
-The pretrained encoder is then used for recognition. The reconstruction decoder is discarded, allowing its design to focus on the pretraining task.
+Images are redundant enough that small missing regions can often be filled by interpolation. MAE removes most patches instead, asking a ViT to infer the missing content from sparse evidence. An asymmetric architecture sends only visible patches through the expensive encoder and reconstructs pixels with a small decoder, producing transferable representations while substantially reducing pretraining cost.
 
 ## Methods
+
+<p align="center">
+  <img src="./images/architecture.svg" alt="Only visible patches pass through the expensive encoder" width="750">
+</p>
+
+<p align="center"><em>MAE reconstructs masked pixels during pretraining and retains the encoder for recognition. Schematic based on the paper.</em></p>
 
 ### Random masking
 
@@ -64,38 +65,43 @@ The paper studies ViT-Base, Large, and Huge. The ablations use ViT-Large to exam
 
 ## Results
 
-<p align="center">
-  <img src="https://arxiv.org/html/2111.06377v3/samples.png" alt="Masked inputs, MAE reconstructions, and original images" width="600">
-</p>
+### ImageNet fine-tuning
 
-<p align="center"><em>Figure 2. Masked images, reconstructions, and targets at an 80% masking ratio.</em></p>
+| Pretraining | ViT-B/16 | ViT-L/16 | ViT-H/14 | ViT-H/14 at 448² |
+| --- | ---: | ---: | ---: | ---: |
+| Supervised from scratch, authors' recipe | 82.3 | 82.6 | 83.1 | — |
+| MoCo v3 | 83.2 | 84.1 | — | — |
+| BEiT | 83.2 | 85.2 | — | — |
+| MAE | 83.6 | 85.9 | 86.9 | 87.8 |
 
-### Masking ratio
+_Table 3, top-1 accuracy ↑; inputs are 224² unless stated._ MAE scales particularly well to larger encoders; BEiT additionally uses a tokenizer pretrained on external data.
 
-A masking ratio of 75% works well for both full fine-tuning and linear probing. This is substantially higher than the proportion of tokens selected for prediction in BERT. Heavy masking removes enough visual redundancy to make the reconstruction task useful.
+### Decoder and target ablations
 
-Random masking also performs better than the studied structured alternatives. Leaving scattered visible patches preserves more distributed evidence than removing large contiguous regions at the same masking ratio.
+| ViT-L pretraining choice | Fine-tuning top-1 ↑ | Linear-probe top-1 ↑ | Relative training FLOPs ↓ |
+| --- | ---: | ---: | ---: |
+| Mask tokens in encoder | 84.2 | 59.6 | 3.3× |
+| No mask tokens in encoder | 84.9 | 73.5 | 1× |
+| Raw pixel target | 84.9 | 73.5 | — |
+| Per-patch normalized target | 85.4 | 73.9 | — |
 
-### Decoder and mask tokens
+_Selected independent ablations from Table 1, using the 800-epoch setup._ Excluding encoder mask tokens improves efficiency and representation quality; normalizing target patches gives a further accuracy gain.
 
-Decoder depth affects linear-probing performance more strongly than full fine-tuning. With an eight-block decoder, the ViT-L baseline reaches 84.9% after fine-tuning and 73.5% under linear probing. A single-block decoder gives similar fine-tuning accuracy but a much lower linear-probing score.
+### COCO transfer
 
-Excluding mask tokens from the encoder reduces training FLOPs by about **3.3 times** and measured training time by about **2.8 times** in the reported ablation. It also improves accuracy, making the asymmetric architecture useful for both efficiency and representation learning.
+| Pretraining / backbone | Box AP ↑ | Mask AP ↑ |
+| --- | ---: | ---: |
+| Supervised / ViT-B | 47.9 | 42.9 |
+| MAE / ViT-B | 50.3 | 44.9 |
+| Supervised / ViT-L | 49.3 | 43.9 |
+| MAE / ViT-L | 53.3 | 47.2 |
 
-### Targets, augmentation, and training duration
+_Selected results from Table 4, ViT Mask R-CNN._ Masked pixel prediction improves localization and instance segmentation, with larger gains for ViT-L.
 
-Normalized pixel targets improve the baseline fine-tuning result from 84.9% to 85.4%. They also perform competitively with discrete visual tokens, without requiring a separately trained image tokenizer.
+### Reconstruction
 
-Random cropping alone provides effective augmentation. Strong color transformations, which are useful in contrastive learning, provide little benefit here. Longer pretraining improves the representations, with 1,600-epoch runs producing strong final results.
+| Masked input → reconstruction → target | Finding |
+| --- | --- |
+| <img src="https://arxiv.org/html/2111.06377v3/samples.png" alt="Figure 2: masked images, reconstructions, and targets" width="420"> | The decoder produces plausible completions despite seeing only 20% of patches |
 
-### ImageNet classification
-
-With ImageNet-1K-only pretraining, ViT-Huge reaches **86.9% top-1 accuracy** when fine-tuned at $224\times224$, and **87.8%** at $448\times448$. Larger encoders benefit from masked pretraining, even though training the same large models from scratch can overfit.
-
-Partial fine-tuning improves substantially over a linear probe. The representations can therefore contain useful information that becomes accessible after adapting only part of the encoder.
-
-### Transfer learning
-
-MAE pretraining improves COCO object detection and instance segmentation, as well as ADE20K semantic segmentation, over the corresponding supervised-pretraining baselines. The gains grow with larger encoders. These experiments show that predicting missing pixels can produce features useful for recognition and localization.
-
-The paper's [Figure 5 and Tables 1–5](https://arxiv.org/pdf/2111.06377) present the masking ablations, ImageNet comparisons, and transfer results.
+_Figure 2 uses 80% masking._ Plausible hidden content can differ from the original image.

@@ -7,11 +7,15 @@
 
 ## Abstract & Introduction
 
-Recurrent neural networks (RNNs) have long been the architecture of choice for natural language processing tasks such as machine translation. However, the sequential RNNs have two large shortcomings: parallelization is difficult, and relationships between far apart tokens are difficult to model. There have been attempts to use convolutional neural networks (CNNs) alongside RNNs in order to reduce sequential computation. 
-
-This paper proposes the Transformer, a model that relies entirely on the attention mechanism to model global dependencies between input and output sequences. Without reliance on any recurrence or convolution, the model achieves significantly more parallelization and reaches state of the art results on machine translation benchmarks. 
+Recurrent translation models process tokens sequentially, limiting parallel training and making distant interactions costly. The Transformer replaces recurrence with self-attention, combining multi-head attention, position-wise feed-forward networks, and positional encodings in an encoder–decoder architecture. It improves WMT translation quality with substantially less training computation and also transfers to constituency parsing.
 
 ## Methods
+
+<p align="center">
+  <img src="./images/architecture.svg" alt="Encoder–decoder attention connects parallel source processing to generation" width="750">
+</p>
+
+<p align="center"><em>The decoder combines masked target attention with attention over the encoder outputs. Schematic based on the paper.</em></p>
 
 ### Model architecture
 
@@ -82,27 +86,34 @@ Here $`p`$ denotes position and $`j`$ indexes sine-cosine pairs. Different frequ
 
 ### Training 
 
-The model was trained on the WMT 2014 English-German dataset and the WMT 2014 English-French dataset, containing 4.5 million and 36 million sentences each. The Adam optimizer, residual dropout and label smoothing was used. The model was trained on eight NVIDIA P100 GPUs. 
+The model was trained on the WMT 2014 English-German dataset and the WMT 2014 English-French dataset, containing 4.5 million and 36 million sentences each. Training uses Adam, residual dropout, and label smoothing. The model was trained on eight NVIDIA P100 GPUs.
 
 ## Results
 
-### Translation quality and efficiency
-
-The Transformer achieves state-of-the-art BLEU scores on both English-to-German and English-to-French translation tasks as the fraction of the training cost. 
+### Machine translation
 
 <p align="center">
-  <img src="images/table2.jpeg" alt="Translation BLEU scores and training costs" width="600">
+  <img src="./images/table2.jpeg" alt="Table 2: translation quality and training computation" width="650">
 </p>
 
-<p align="center"><em>Table 2. BLEU scores and training costs of English-to-German and English-to-French translation models.</em></p>
+_Table 2._ Transformer-Big improves both translation benchmarks; the base model already exceeds the listed baselines on English–German.
 
-### English Constituency Parsing
+### Architecture ablations
 
-In order to evaluate the Transformer for other NLP tasks, its performance on English constituency parsing was experimented. The Wall Street Journal (WSJ) portion of the Penn Treebank and BerkeleyParser datasets were used. Despite the lack of task-specific tuning, the Transformer outperformed all previous models except one. 
+| Change from the base model | EN–DE development BLEU ↑ |
+| --- | ---: |
+| Base: 8 attention heads | 25.8 |
+| 1 attention head | 24.9 |
+| 32 attention heads | 25.4 |
+| No dropout | 24.6 |
+| Learned position embeddings | 25.7 |
+
+_Selected results from Table 3, newstest2013._ Multiple heads and dropout help, while learned and sinusoidal positions perform similarly.
+
+### English constituency parsing
 
 <p align="center">
-  <img src="images/table4.jpeg" alt="English constituency parsing results" width="600">
+  <img src="./images/table4.jpeg" alt="Table 4: English constituency parsing" width="650">
 </p>
 
-<p align="center"><em>Table 4. English constituency parsing results. </em></p>
-
+_Table 4._ The Transformer transfers well to parsing, although the strongest compared parsers still score higher.

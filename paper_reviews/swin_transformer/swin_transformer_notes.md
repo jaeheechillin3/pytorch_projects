@@ -5,14 +5,17 @@
 > **Publication:** ICCV 2021\
 > **Link:** [https://arxiv.org/abs/2103.14030](https://arxiv.org/abs/2103.14030)
 
-
 ## Abstract & Introduction
 
-ViT applies a Transformer directly to image patches, but its single feature-map scale and global attention make it difficult to use for high-resolution dense prediction. Objects also vary greatly in size, requiring features that describe both fine detail and larger spatial regions.
-
-This paper introduces the Swin Transformer, a hierarchical backbone for classification, object detection, and segmentation. It computes self-attention within local windows and shifts the window partition between consecutive blocks. This limits computation while allowing information to pass between neighboring windows.
+Images contain objects at different scales, and dense prediction needs more spatial detail than a single coarse token grid provides. Swin builds a Transformer feature hierarchy and restricts attention to local windows, shifting their boundaries between blocks to exchange information. This makes computation scale linearly with image area while supporting classification, detection, and segmentation with the same backbone.
 
 ## Methods
+
+<p align="center">
+  <img src="./images/architecture.svg" alt="A hierarchy of alternating regular and shifted window attention" width="750">
+</p>
+
+<p align="center"><em>Patch merging builds the hierarchy; window shifts exchange information within each stage. Schematic based on the paper.</em></p>
 
 ### Overall architecture
 
@@ -63,16 +66,16 @@ The implementation performs a cyclic shift toward the top left before partitioni
 Each block applies layer normalization before attention and before a two-layer GELU MLP. Both sublayers have residual connections:
 
 ```math
-\widehat z^\ell=\operatorname{W\!-\!MSA}(\operatorname{LN}(z^{\ell-1}))+z^{\ell-1},
+\widehat z^\ell=\mathrm{W\!-\!MSA}(\mathrm{LN}(z^{\ell-1}))+z^{\ell-1},
 \qquad
-z^\ell=\operatorname{MLP}(\operatorname{LN}(\widehat z^\ell))+\widehat z^\ell.
+z^\ell=\mathrm{MLP}(\mathrm{LN}(\widehat z^\ell))+\widehat z^\ell.
 ```
 
 The next block uses shifted-window attention in the same structure. Within each attention head, a learned relative position bias is added to the query–key scores:
 
 ```math
-\operatorname{Attention}(Q,K,V)
-=\operatorname{softmax}(QK^\top/\sqrt d+B)V.
+\mathrm{Attention}(Q,K,V)
+=\mathrm{softmax}(QK^\top/\sqrt d+B)V.
 ```
 
 The bias depends on the relative horizontal and vertical offset of a pair of tokens. An $M\times M$ window requires a table covering $(2M-1)^2$ possible offsets per head.
@@ -85,20 +88,33 @@ ImageNet-1K training uses AdamW for 300 epochs. Larger models are also pretraine
 
 ## Results
 
-### Image classification
+### ImageNet-1K classification
 
-Swin-T achieves **81.3% ImageNet top-1 accuracy** at $224\times224$, with 29 million parameters and 4.5 GFLOPs. Swin-S reaches 83.0%, and Swin-B reaches 83.5% at the same resolution with ImageNet-1K training.
+| Model | Pretraining | Input | GFLOPs | Top-1 ↑ |
+| --- | --- | --- | ---: | ---: |
+| Swin-T | ImageNet-1K | 224² | 4.5 | 81.3 |
+| Swin-S | ImageNet-1K | 224² | 8.7 | 83.0 |
+| Swin-B | ImageNet-1K | 224² | 15.4 | 83.5 |
+| Swin-B | ImageNet-1K | 384² | 47.0 | 84.5 |
+| Swin-L | ImageNet-22K | 384² | 103.9 | 87.3 |
 
-The larger Swin-L reaches **87.3%** using ImageNet-22K pretraining and $384\times384$ fine-tuning. This is the paper's headline classification result.
+_Selected results from Table 1._ Higher capacity, resolution, and additional pretraining data each contribute to the strongest result.
 
-### Object detection and segmentation
+### Window-shift ablation
 
-With Cascade Mask R-CNN, Swin-T reaches **50.5 box AP** on COCO, compared with 46.3 for ResNet-50 in the corresponding comparison. The hierarchy supplies feature maps at the resolutions needed by the detector.
+| Swin-T variant | ImageNet top-1 ↑ | COCO box AP ↑ | COCO mask AP ↑ | ADE20K mIoU ↑ |
+| --- | ---: | ---: | ---: | ---: |
+| No window shifts | 80.2 | 47.7 | 41.5 | 43.3 |
+| Shifted windows | 81.3 | 50.5 | 43.7 | 46.1 |
 
-For ADE20K semantic segmentation, UperNet with Swin-S reaches **49.3 mIoU**. ImageNet-22K-pretrained Swin-L reaches **53.5 mIoU**. These results show that the backbone transfers to tasks requiring predictions across the image.
+_Selected results from Table 4._ Cross-window communication improves all three tasks with little latency overhead.
 
-### Ablation studies
+### Position-bias ablation
 
-Removing window shifts lowers Swin-T's ImageNet accuracy from 81.3% to 80.2% and COCO box AP from 50.5 to 47.7. Relative position bias also improves performance. The shift ablation demonstrates that communication across windows contributes beyond the efficiency of local attention alone.
+| Position information | ImageNet top-1 ↑ | COCO box AP ↑ | ADE20K mIoU ↑ |
+| --- | ---: | ---: | ---: |
+| None | 80.1 | 49.2 | 43.8 |
+| Absolute | 80.5 | 49.0 | 43.2 |
+| Relative | 81.3 | 50.5 | 46.1 |
 
-The paper's [Tables 1–4](https://arxiv.org/pdf/2103.14030) contain the classification, dense-prediction, and ablation comparisons.
+_Selected results from Table 4._ Relative position bias helps both recognition and dense prediction, while absolute embeddings do not transfer as consistently.

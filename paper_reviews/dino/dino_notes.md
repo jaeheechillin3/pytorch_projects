@@ -5,14 +5,17 @@
 > **Publication:** ICCV 2021\
 > **Link:** [https://arxiv.org/abs/2104.14294](https://arxiv.org/abs/2104.14294)
 
-
 ## Abstract & Introduction
 
-Vision Transformers can learn strong image representations with supervised pretraining, but the pretraining objective may affect what those representations contain. This paper examines the properties that emerge when a ViT is trained without labels.
-
-The proposed method, DINO, learns through _self-distillation with no labels_. A student network predicts the output of a teacher network for another view of the same image. The teacher is updated from the student during training. The resulting features work well for nearest-neighbor classification, and the attention maps often separate objects from their backgrounds.
+What does a Vision Transformer learn when no one tells it the image's class? DINO trains a student to match a momentum teacher across different crops, using centering and sharpening to keep the predictions informative. The resulting representations support strong nearest-neighbor classification and often reveal foreground objects in their attention maps, despite receiving no segmentation labels.
 
 ## Methods
+
+<p align="center">
+  <img src="./images/architecture.svg" alt="Self-distillation across local and global views" width="750">
+</p>
+
+<p align="center"><em>Global teacher views supervise the student across different crops. Schematic based on the paper.</em></p>
 
 ### Student and teacher networks
 
@@ -32,7 +35,7 @@ For two views of an image, the student is trained to match the teacher using cro
 \mathcal L=
 \sum_{v\in V_{\mathrm{global}}}
 \sum_{\substack{v'\in V\\v'\ne v}}
-H\!\left(\operatorname{sg}[P_t(v)],P_s(v')\right).
+H\!\left(\mathrm{sg}[P_t(v)],P_s(v')\right).
 ```
 
 Here $H(p,q)=-\sum_k p_k\log q_k$, and stop-gradient prevents the teacher from receiving backpropagated updates.
@@ -65,24 +68,37 @@ The paper evaluates both ResNets and ViTs pretrained on ImageNet without labels.
 
 ## Results
 
-### ImageNet classification
+### ImageNet frozen-feature evaluation
 
-DINO reaches **80.1% top-1 accuracy** in linear evaluation with a small-patch ViT-Base. A small-patch ViT-S reaches **78.3%** using nearest-neighbor classification. The latter result shows that images with related semantics are already grouped usefully in the frozen feature space.
+| Method / backbone | Linear top-1 ↑ | k-NN top-1 ↑ |
+| --- | ---: | ---: |
+| BYOL / ResNet-50 | 74.4 | 64.8 |
+| SwAV / ResNet-50 | 75.3 | 65.7 |
+| DINO / ResNet-50 | 75.3 | 67.5 |
+| DINO / ViT-S/16 | 77.0 | 74.5 |
+| DINO / ViT-B/16 | 78.2 | 76.1 |
+| DINO / ViT-S/8 | 79.7 | 78.3 |
+| DINO / ViT-B/8 | 80.1 | 77.4 |
 
-### Object structure and retrieval
+_Selected results from Table 2._ Smaller patches improve frozen features, and the strong k-NN results show useful semantic organization without fitting a classifier.
 
-<p align="center">
-  <img src="https://arxiv.org/html/2104.14294v2/attn6.png" alt="Final-layer class-token attention maps from a self-supervised ViT" width="600">
-</p>
+### Components and emergent properties
 
-<p align="center"><em>Figure 1. Class-token attention from a ViT trained without labels.</em></p>
+| Experiment | Reported finding |
+| --- | --- |
+| Momentum teacher | Improves the student's representation and supplies more stable targets |
+| Multi-crop training | Improves performance by matching local views to global views |
+| Centering + sharpening | Together avoid the degenerate predictions seen with inadequate output balancing |
+| Image retrieval and copy detection | Frozen features retain useful instance information |
+| Video object segmentation | Feature correspondences support label propagation across frames |
+| Final-layer attention | Several heads separate foreground objects without mask supervision |
 
-Several attention heads highlight coherent foreground objects even though training provides no segmentation masks. The paper also propagates object labels through video using feature correspondences and evaluates image retrieval and copy detection. These experiments examine spatial and instance information beyond classification.
+_Qualitative summary of Sections 4–5._ The results connect the training design to both global recognition and spatial information.
 
-### Ablation studies
+### Attention maps
 
-The momentum teacher and multi-crop training both improve representation quality. Smaller image patches also help substantially, although they lengthen the token sequence and increase computation.
+| Evidence | Finding |
+| --- | --- |
+| <img src="https://arxiv.org/html/2104.14294v2/attn6.png" alt="Figure 1: DINO class-token attention" width="420"> | Several heads highlight coherent foreground objects |
 
-The centering and sharpening experiments show that the teacher's output distribution is essential to stable learning. The method also remains effective with smaller batches, making it less dependent on the very large batches used to supply negatives in some contrastive approaches.
-
-Together, the experiments show that self-supervision changes the features learned by a ViT. DINO produces useful global image representations while retaining spatial information visible in its attention maps.
+_Figure 1._ The spatial structure emerges without segmentation supervision.
