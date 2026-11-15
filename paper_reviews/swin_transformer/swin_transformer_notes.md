@@ -12,10 +12,10 @@ Images contain objects at different scales, and dense prediction needs more spat
 ## Methods
 
 <p align="center">
-  <img src="./images/architecture.svg" alt="A hierarchy of alternating regular and shifted window attention" width="750">
+  <img src="https://miro.medium.com/v2/resize%3Afit%3A1400/1%2AtXCiVjcULy5wYvUptEntRA.png" alt="Figure 3. Swin-T architecture and two successive Swin Transformer blocks." width="700">
 </p>
 
-<p align="center"><em>Patch merging builds the hierarchy; window shifts exchange information within each stage. Schematic based on the paper.</em></p>
+<p align="center"><em>Figure 3. Swin-T architecture and two successive Swin Transformer blocks. From the <a href="https://arxiv.org/abs/2103.14030">original paper</a>.</em></p>
 
 ### Overall architecture
 

@@ -12,10 +12,10 @@ GANs could generate images, but training them with deep convolutional networks w
 ## Methods
 
 <p align="center">
-  <img src="./images/architecture.svg" alt="Adversarial learning with convolutional networks" width="750">
+  <img src="./images/figure1.png" alt="Figure 1. The DCGAN generator architecture." width="700">
 </p>
 
-<p align="center"><em>The generator and discriminator learn through the image-generation task. Schematic based on the paper.</em></p>
+<p align="center"><em>Figure 1. The DCGAN generator architecture. From the <a href="https://arxiv.org/abs/1511.06434">original paper</a>.</em></p>
 
 Scaling GANs with conventional CNN architectures proved difficult, especially due to unstable training. The paper adopts four architectural modifications:
 
@@ -24,11 +24,6 @@ Scaling GANs with conventional CNN architectures proved difficult, especially du
 3. _Batch normalization_. Batch normalization (Ioffe & Szegedy, 2015) stabilizes learning and helps gradient flow. It is omitted from the generator output layer and discriminator input layer to avoid instability.
 4. _Activation functions_. Use ReLU in the generator, except for its Tanh output, and LeakyReLU in the discriminator. The original GAN's discriminator used maxout.
 
-<p align="center">
-  <img src="images/figure1.png" alt="DCGAN generator architecture" width="600">
-</p>
-
-<p align="center"><em>Figure 1. The generator maps a noise vector to a 64 × 64 image.</em></p>
 
 DCGAN was trained on LSUN bedrooms, ImageNet-1k, and a Faces dataset. Training uses Adam with a learning rate of 0.0002 and β₁ = 0.5; reducing β₁ from 0.9 helped stabilize training.
 

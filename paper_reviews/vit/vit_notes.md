@@ -12,18 +12,13 @@ A Transformer can recognize images by reading patches as tokens. ViT applies a l
 ## Methods
 
 <p align="center">
-  <img src="./images/architecture.svg" alt="From image patches to an image-level prediction" width="750">
+  <img src="./images/figure1.jpg" alt="Figure 1. Vision Transformer architecture." width="700">
 </p>
 
-<p align="center"><em>ViT converts a patch sequence into a contextual class-token representation. Schematic based on the paper.</em></p>
+<p align="center"><em>Figure 1. Vision Transformer architecture. From the <a href="https://arxiv.org/abs/2010.11929">original paper</a>.</em></p>
 
 ### Model 
 
-<p align="center">
-  <img src="./images/figure1.jpg" alt="Vision Transformer patch embedding and encoder architecture" width="600">
-</p>
-
-<p align="center"><em>Figure 1. Patch embeddings and a class token enter a Transformer encoder.</em></p>
 
 **Patch and position embeddings.** An image of size $`H\times W`$ with $`C`$ channels is split into $`N=HW/P^2`$ non-overlapping patches. Each flattened patch contains $`P^2C`$ values and is projected into a $`D`$-dimensional embedding. A learnable class token is prepended, and learned 1D position embeddings are added:
 

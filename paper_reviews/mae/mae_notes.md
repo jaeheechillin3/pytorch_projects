@@ -12,10 +12,10 @@ Images are redundant enough that small missing regions can often be filled by in
 ## Methods
 
 <p align="center">
-  <img src="./images/architecture.svg" alt="Only visible patches pass through the expensive encoder" width="750">
+  <img src="https://arxiv.org/html/2111.06377v3/arch.png" alt="Figure 1. MAE's asymmetric encoder–decoder architecture." width="700">
 </p>
 
-<p align="center"><em>MAE reconstructs masked pixels during pretraining and retains the encoder for recognition. Schematic based on the paper.</em></p>
+<p align="center"><em>Figure 1. MAE's asymmetric encoder–decoder architecture. From the <a href="https://arxiv.org/abs/2111.06377">original paper</a>.</em></p>
 
 ### Random masking
 
@@ -25,11 +25,6 @@ For a $224\times224$ image with $16\times16$ patches, there are 196 image patche
 
 ### Asymmetric encoder and decoder
 
-<p align="center">
-  <img src="https://arxiv.org/html/2111.06377v3/arch.png" alt="MAE encoder processes visible patches and a lightweight decoder reconstructs missing patches" width="600">
-</p>
-
-<p align="center"><em>Figure 1. Visible patches enter the encoder; mask tokens are introduced in the decoder.</em></p>
 
 The encoder is a ViT applied only to the visible patches. Each patch receives a linear embedding and its positional embedding before entering the Transformer. The original positions are retained even though the encoder processes a shortened sequence.
 

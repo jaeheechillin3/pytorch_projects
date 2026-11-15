@@ -12,10 +12,10 @@ What does a Vision Transformer learn when no one tells it the image's class? DIN
 ## Methods
 
 <p align="center">
-  <img src="./images/architecture.svg" alt="Self-distillation across local and global views" width="750">
+  <img src="https://i-blog.csdnimg.cn/blog_migrate/ad2824720a3c4071bc28c97081d5a247.png" alt="Figure 2. Self-distillation with no labels." width="700">
 </p>
 
-<p align="center"><em>Global teacher views supervise the student across different crops. Schematic based on the paper.</em></p>
+<p align="center"><em>Figure 2. Self-distillation with no labels. From the <a href="https://arxiv.org/abs/2104.14294">original paper</a>.</em></p>
 
 ### Student and teacher networks
 

@@ -12,10 +12,10 @@ A segmentation model is only as good as the pipeline around it. nnU-Net turns th
 ## Methods
 
 <p align="center">
-  <img src="./images/architecture.svg" alt="Dataset properties determine a complete segmentation pipeline" width="750">
+  <img src="https://media.springernature.com/lw1200/springer-static/image/art%3A10.1038%2Fs41592-020-01008-z/MediaObjects/41592_2020_1008_Fig2_HTML.png" alt="Figure 2. nnU-Net's automated pipeline design and configuration." width="700">
 </p>
 
-<p align="center"><em>nnU-Net infers candidate pipelines and uses validation to select the final system. Schematic based on the paper.</em></p>
+<p align="center"><em>Figure 2. nnU-Net's automated pipeline design and configuration. From the <a href="https://www.nature.com/articles/s41592-020-01008-z">original paper</a>.</em></p>
 
 ### Dataset and pipeline fingerprints
 

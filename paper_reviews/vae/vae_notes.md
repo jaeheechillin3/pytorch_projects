@@ -12,10 +12,10 @@ Learning a latent-variable model becomes difficult when its posterior and margin
 ## Methods
 
 <p align="center">
-  <img src="./images/architecture.svg" alt="Reparameterization connects the encoder to the reconstruction loss" width="750">
+  <img src="https://hunterheidenreich.com/img/notes/autoencoding-variational-bayes-figure-1-model-diagram.webp" alt="Figure 1. Generative model and variational approximation." width="700">
 </p>
 
-<p align="center"><em>Independent noise makes latent sampling differentiable with respect to encoder outputs. Schematic based on the paper.</em></p>
+<p align="center"><em>Figure 1. Generative model and variational approximation. From the <a href="https://arxiv.org/abs/1312.6114">original paper</a>.</em></p>
 
 ### Generative model and probabilistic encoder
 

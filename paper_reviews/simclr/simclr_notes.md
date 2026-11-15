@@ -12,10 +12,10 @@ Useful visual features can be learned by recognizing two altered views of the sa
 ## Methods
 
 <p align="center">
-  <img src="./images/architecture.svg" alt="Two views of one image form a positive pair" width="750">
+  <img src="https://ucladeepvision.github.io/CS188-Projects-2023Winter/assets/images/team40/simClr.png" alt="Figure 2. The SimCLR contrastive-learning framework." width="700">
 </p>
 
-<p align="center"><em>The contrastive objective acts after projection; downstream tasks retain the encoder features. Schematic based on the paper.</em></p>
+<p align="center"><em>Figure 2. The SimCLR contrastive-learning framework. From the <a href="https://arxiv.org/abs/2002.05709">original paper</a>.</em></p>
 
 ### The contrastive learning framework
 
@@ -27,11 +27,6 @@ h_i=f(\widetilde x_i),\qquad z_i=g(h_i).
 
 The encoder representation $h_i$ is the output after global average pooling. The projection head is a two-layer MLP with a ReLU activation. The contrastive objective acts on $z_i$; downstream tasks use $h_i$ after discarding the head.
 
-<p align="center">
-  <img src="https://1.bp.blogspot.com/--vH4PKpE9Yo/Xo4a2BYervI/AAAAAAAAFpM/vaFDwPXOyAokAC8Xh852DzOgEs22NhbXwCLcBGAsYHQ/s1600/image4.gif" alt="Two augmented views pass through a shared encoder and projection head" width="600">
-</p>
-
-<p align="center"><em>SimCLR framework. Illustration from the authors' implementation.</em></p>
 
 For a minibatch of $N$ images, augmentation creates $2N$ views. Each view has one positive counterpart and $2N-2$ negatives from the other images. The normalized temperature-scaled cross entropy loss, or NT-Xent, is
 

@@ -12,10 +12,10 @@ Compressing an entire sentence into one vector makes early neural translation mo
 ## Methods
 
 <p align="center">
-  <img src="./images/architecture.svg" alt="Attention retrieves source information at every target step" width="750">
+  <img src="./images/figure3.jpeg" alt="Figure 3. Source–target alignments learned by RNNsearch-50." width="700">
 </p>
 
-<p align="center"><em>Attention forms a new weighted context for each generated word. Schematic based on the paper.</em></p>
+<p align="center"><em>Figure 3. Source–target alignments learned by RNNsearch-50. From the <a href="https://arxiv.org/abs/1409.0473">original paper</a>.</em></p>
 
 ### Decoder
 
@@ -76,6 +76,5 @@ _Table 1._ Attention improves both encoder–decoder baselines; the longer-train
 | Evidence | Finding |
 | --- | --- |
 | <img src="./images/figure2.jpeg" alt="Figure 2: BLEU versus sentence length" width="260"> | Attention substantially reduces degradation on long sentences |
-| <img src="./images/figure3.jpeg" alt="Figure 3: learned source–target alignments" width="360"> | Soft alignments capture local correspondences and word reordering |
 
-_Figures 2–3._ The visualizations support the motivation for retrieving a different source context at each decoder step.
+_Figure 2._ Attention reduces the degradation on longer sentences.

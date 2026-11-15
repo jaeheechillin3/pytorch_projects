@@ -12,18 +12,14 @@ Recurrent translation models process tokens sequentially, limiting parallel trai
 ## Methods
 
 <p align="center">
-  <img src="./images/architecture.svg" alt="Encoder–decoder attention connects parallel source processing to generation" width="750">
+  <img src="./images/figure1.png" alt="Figure 1. The Transformer encoder–decoder architecture." width="700">
 </p>
 
-<p align="center"><em>The decoder combines masked target attention with attention over the encoder outputs. Schematic based on the paper.</em></p>
+<p align="center"><em>Figure 1. The Transformer encoder–decoder architecture. From the <a href="https://arxiv.org/abs/1706.03762">original paper</a>.</em></p>
 
 ### Model architecture
 
 The Transformer uses an encoder-decoder architecture: the encoder maps the source sequence to contextual representations, and the decoder generates the output one token at a time, conditioned on these representations and the previously generated tokens.
-
-<p align="center">
-  <img src="./images/figure1.png" alt="Transformer encoder-decoder architecture" width="300">
-</p>
 
 The base model has six encoder and six decoder layers, with $`d_{\mathrm{model}}=512`$. Each encoder layer contains multi-head self-attention and a position-wise feed-forward network. Each decoder layer contains masked self-attention, encoder-decoder attention, and a feed-forward network. Every sublayer uses a residual connection followed by layer normalization. The decoder inputs are shifted right by one token; together with causal masking, this prevents predictions from accessing the target token being predicted or later tokens. Training processes target positions in parallel, while generation proceeds sequentially.
 

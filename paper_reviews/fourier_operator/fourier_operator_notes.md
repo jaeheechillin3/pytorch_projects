@@ -12,10 +12,10 @@ Repeatedly solving a PDE for new coefficients or initial conditions is expensive
 ## Methods
 
 <p align="center">
-  <img src="./images/architecture.svg" alt="A Fourier layer combines global and pointwise operations" width="750">
+  <img src="https://arxiv.org/html/2010.08895v3/figs/fourier_full_arch5.png" alt="Figure 2. The neural operator architecture and Fourier layer." width="700">
 </p>
 
-<p align="center"><em>The spectral branch mixes information globally; the pointwise branch acts locally. Schematic based on the paper.</em></p>
+<p align="center"><em>Figure 2. The neural operator architecture and Fourier layer. From the <a href="https://arxiv.org/abs/2010.08895">original paper</a>.</em></p>
 
 ### Learning operators
 
@@ -61,11 +61,6 @@ The spectral branch communicates globally across the grid. The pointwise branch 
 
 For a fixed number of retained modes and feature channels, the FFT gives approximately $O(n\log n)$ complexity in the number of grid points. The same spectral weights can be applied on compatible grids of different resolutions.
 
-<p align="center">
-  <img src="https://arxiv.org/html/2010.08895v3/figs/fourier_full_arch5.png" alt="Figure 2: complete Fourier neural operator architecture" width="650">
-</p>
-
-<p align="center"><em>Figure 2. Lifting, repeated Fourier layers, and projection back to the solution field.</em></p>
 
 ## Results
 
