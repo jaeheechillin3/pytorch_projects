@@ -5,86 +5,89 @@
 > **Publication:** NAACL 2019\
 > **Link:** [https://arxiv.org/abs/1810.04805](https://arxiv.org/abs/1810.04805)
 
-## Abstract & Introduction 
 
-This paper introduces the Bidirectional Encoder Representations from Transformers, or BERT. The model incorporates both left and right context to produce rich representations. After being pretrained on unlabeled text, it can be fine-tuned for a large variety of natural language processing tasks. This approach of pretraining followed by fine-tuning can replace and outperform many task-specific architectures; BERT achieves state-of-the-art performance on eleven different NLP tasks. 
+## Abstract & Introduction
 
-## Methods 
+This paper introduces Bidirectional Encoder Representations from Transformers, or BERT. The model incorporates both left and right context to produce representations that can be adapted to many natural language processing tasks. After pretraining on unlabeled text, the same model architecture is fine-tuned with a small task-specific output layer.
 
-A bidirectional encoder consumes summed token, segment, and position embeddings. [CLS] supplies a sequence-level output, while [SEP] separates packed segments. BERT-Base uses 12 layers, hidden width 768, and 12 attention heads. BERT-Large uses 24 layers, width 1024, and 16 heads. WordPiece tokenization represents inputs as subword units. Segment embeddings identify which of two packed text spans a token belongs to; position embeddings supply sequence order.
+Earlier fine-tuning approaches such as GPT used left-to-right language modeling. Each token could therefore attend only to earlier tokens, limiting the context available for tasks such as question answering. ELMo combined separately trained forward and backward language models. BERT instead allows both directions to interact at every layer.
 
-<p align="center">
-  <!-- TODO: Add ./images/figure2.png, then uncomment the image below. -->
-  <!-- <img src="./images/figure2.png" alt="Token, segment, and position embeddings are summed." width="600"> -->
-</p>
+BERT achieves state-of-the-art results on eleven NLP tasks. Its contribution is a pretraining procedure that makes a deeply bidirectional Transformer useful across sentence-level and token-level applications.
 
-<p align="center"><em>Figure 2. Token, segment, and position embeddings are summed. [Image to add]</em></p>
+## Methods
 
-### 3.1 Pre-training BERT
+### Model architecture and input representations
 
-**Masked LM.** Select 15% of tokens; replace selected tokens with [MASK], random tokens, or unchanged tokens in an 80/10/10 ratio. Predict originals at selected positions. Supervise every selected position, including unchanged tokens; 15% denotes selection, not [MASK] replacement. Keeping some selected tokens unchanged and replacing others randomly reduces reliance on a special token absent during downstream use. Unlike ordinary next-token prediction, the objective only scores the selected positions.
+BERT uses the encoder from the original Transformer. BERT-Base has 12 layers, hidden width 768, and 12 attention heads, with 110 million parameters. BERT-Large has 24 layers, hidden width 1,024, and 16 heads, with 340 million parameters.
+
+The input can contain one text span or a pair. A [CLS] token is added at the beginning, and [SEP] tokens mark boundaries. The final [CLS] representation is used for sequence classification. A question and passage can be packed together so that their tokens interact directly through self-attention.
+
+Each input representation sums three learned embeddings:
 
 ```math
-\mathcal L_{\mathrm{MLM}}=-\sum_{i\in M}\log p_\theta(x_i\mid\widetilde{x}).
+E_i=E_{\mathrm{token},i}+E_{\mathrm{segment},i}+E_{\mathrm{position},i}.
 ```
 
-Here $M$ is the selected position set and $\widetilde{x}$ is the corrupted sequence. Bidirectional attention is allowed over that sequence; the original answers remain training targets rather than inputs at replaced positions.
+WordPiece tokenization uses a 30,000-token vocabulary. Segment embeddings distinguish the two packed spans, while position embeddings encode sequence order. In the paper, a “sentence” can be a contiguous span of text rather than a complete grammatical sentence.
 
-**Next sentence prediction.** Classify genuine versus randomly paired continuations, sampled equally. BooksCorpus and Wikipedia supply pretraining examples. The [CLS] output predicts whether the second span actually follows the first. A “sentence” here may be a contiguous text span rather than a linguistically complete sentence. This auxiliary task trains relationships between paired inputs.
+### Masked language modeling
 
-### 3.2 Fine-tuning BERT
+A conventional bidirectional language model could see the token it is supposed to predict. BERT avoids this problem by selecting 15% of input positions for prediction. Of the selected tokens, 80% are replaced with [MASK], 10% with a random token, and 10% remain unchanged.
 
-Attach task-specific outputs and update all parameters. Use [CLS] for classification and token outputs for tagging. Each downstream task gets its own fine-tuned model initialized from the same pretrained weights. Packing a question and passage together lets self-attention model their interactions directly, without a separately designed cross-attention system.
+The objective predicts the original tokens at all selected positions:
 
-<p align="center">
-  <!-- TODO: Add ./images/figure1.png, then uncomment the image below. -->
-  <!-- <img src="./images/figure1.png" alt="Shared pretrained encoder adapted to different downstream tasks." width="600"> -->
-</p>
+```math
+\mathcal L_{\mathrm{MLM}}
+=-\sum_{i\in M}\log p_\theta(x_i\mid\widetilde x).
+```
 
-<p align="center"><em>Figure 1. Shared pretrained encoder adapted to different downstream tasks. [Image to add]</em></p>
+Here $M$ is the selected position set and $\widetilde x$ is the corrupted input. Only selected positions contribute to this loss. Random replacements and unchanged tokens reduce the mismatch caused by [MASK] appearing during pretraining but not ordinary fine-tuning.
 
-## 4 Experiments
+Because prediction uses the corrupted sequence, the encoder can attend bidirectionally without having access to the original answers at replaced positions.
 
-### 4.1 GLUE
+### Next sentence prediction
 
-Evaluate sentence classification and sentence-pair understanding. BERT-Large's official GLUE score is 80.5; Table 1 excludes WNLI from its average. The benchmark mixes different tasks and metrics, so its aggregate should not be interpreted as one ordinary classification accuracy. The broad gains support the usefulness of shared pretraining beyond a single application.
+The second objective classifies whether a second span follows the first in the source document. Half of the training pairs are genuine continuations; the other half use a randomly sampled span. A classifier over [CLS] predicts _IsNext_ or _NotNext_.
 
-<p align="center">
-  <!-- TODO: Add ./images/table1.png, then uncomment the image below. -->
-  <!-- <img src="./images/table1.png" alt="GLUE test results for BERT and baseline systems." width="650"> -->
-</p>
+This next sentence prediction (NSP) objective trains a representation of the relationship between paired inputs. The total pretraining loss combines MLM and NSP.
 
-<p align="center"><em>Table 1. GLUE test results for BERT and baseline systems. [Image to add]</em></p>
+### Pretraining and fine-tuning
 
-### 4.2 SQuAD v1.1
+Pretraining uses BooksCorpus, containing 800 million words, and English Wikipedia, containing 2.5 billion words. Document boundaries are retained so that training examples can contain long contiguous passages.
 
-Predict answer-span endpoints using separate start/end scores over passage tokens. A softmax over token scores defines each endpoint distribution, and training increases the probabilities of the annotated endpoints. At inference, the selected span must have its end at or after its start.
+The models train for one million steps with batches of 256 sequences. Most steps use sequences of length 128, followed by length 512 for the final 10%. This reduces the cost of pretraining while still training the longer position embeddings.
 
-### 4.3 SQuAD v2.0
+Fine-tuning initializes the encoder from these weights and updates all parameters. Sequence classification attaches an output layer to [CLS]. Token classification attaches outputs to individual token states. Each downstream task produces its own fine-tuned model.
 
-Also recognize unanswerable questions by comparing the best span against a [CLS]-based no-answer score. Unanswerable training examples assign both endpoints to [CLS]. A development-set threshold controls whether to return a passage span or no answer.
+## Results
 
-### 4.4 SWAG
+### GLUE
 
-Score each context–continuation pair and select among four choices. Each candidate becomes a separate packed input, and a shared scorer operates on its [CLS] representation.
+BERT improves results across sentence classification and sentence-pair tasks. BERT-Large achieves an official GLUE score of **80.5**. The paper's Table 1 reports individual tasks and an average excluding WNLI, so that table average differs from the official benchmark score.
 
-## 5 Ablation Studies
+### SQuAD v1.1 and v2.0
 
-### 5.1 Effect of Pre-training Tasks
+For extractive question answering, the input combines a question with its passage. Learned vectors score each passage token as a possible start or end of the answer:
 
-Compare bidirectionality and NSP ablations. Removing NSP reduces several scores; replacing masked pretraining with left-to-right modeling particularly hurts token-level question answering. The ablations keep the training data and fine-tuning scheme controlled, helping separate objective choices from dataset differences. Their NSP findings describe this experimental setup rather than establishing a universal requirement for every later model.
+```math
+P_{\mathrm{start}}(i)=
+\frac{\exp(S^\top T_i)}{\sum_j\exp(S^\top T_j)},\qquad
+P_{\mathrm{end}}(i)=
+\frac{\exp(E^\top T_i)}{\sum_j\exp(E^\top T_j)}.
+```
 
-<p align="center">
-  <!-- TODO: Add ./images/table5.png, then uncomment the image below. -->
-  <!-- <img src="./images/table5.png" alt="Pretraining-objective ablations with the BERT-Base architecture." width="650"> -->
-</p>
+The predicted answer is a valid span with a high combined endpoint score. The SQuAD v1.1 ensemble achieves **93.2 test F1**.
 
-<p align="center"><em>Table 5. Pretraining-objective ablations with the BERT-Base architecture. [Image to add]</em></p>
+SQuAD v2.0 also contains unanswerable questions. Training uses [CLS] as the start and end for these examples. At inference, its score is compared with the best answer span using a tuned threshold. BERT-Large reaches **83.1 test F1**.
 
-### 5.2 Effect of Model Size
+### SWAG
 
-Larger models improve downstream results, including tasks with few labeled examples. This suggests that increasing pretrained capacity can help even when the downstream dataset alone would be too small to train such a model effectively.
+Each of four candidate continuations is paired with the context and scored from [CLS]. Selecting the highest score gives **86.3% test accuracy** for BERT-Large.
 
-### 5.3 Feature-based Approach with BERT
+### Ablation studies
 
-Test frozen features on named-entity recognition as an alternative to full fine-tuning. Frozen contextual representations remain useful, showing that the pretrained model can also supply features when updating all its parameters is undesirable.
+Removing NSP reduces performance on several tasks. In the BERT-Base ablation, QNLI accuracy falls from 88.4 to 84.9. Replacing masked pretraining with left-to-right modeling hurts more strongly on token-level tasks: SQuAD F1 falls from 88.5 to 77.8.
+
+Larger pretrained models also improve downstream results, including on MRPC, which has only about 3,600 training examples. A feature-based experiment on named-entity recognition finds that frozen BERT features remain useful, although full fine-tuning performs better.
+
+The paper's [Figures 1–2 and Tables 1–6](https://arxiv.org/pdf/1810.04805) present the input format, task adaptations, and benchmark comparisons.

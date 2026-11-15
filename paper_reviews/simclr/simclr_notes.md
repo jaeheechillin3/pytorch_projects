@@ -5,77 +5,75 @@
 > **Publication:** ICML 2020\
 > **Link:** [https://arxiv.org/abs/2002.05709](https://arxiv.org/abs/2002.05709)
 
-*Draft — follows the paper's main section order; appendices are condensed.*
 
-## Abstract
+## Abstract & Introduction
 
-Contrastive learning produces transferable visual features without semantic labels.
+Self-supervised learning aims to learn useful image representations without class labels. Contrastive methods do this by bringing related views together and separating unrelated examples. Earlier methods often required a memory bank or specialized model components.
 
-## 1 Introduction
+This paper introduces SimCLR, a framework built from data augmentation, an image encoder, a projection head, and a contrastive loss. Its experiments examine which choices make this simple setup effective. The composition of augmentations, a nonlinear projection head, and a large training batch all contribute substantially to representation quality.
 
-The paper isolates augmentation, projection, and optimization choices.
+## Methods
 
-## 2 Method
+### The contrastive learning framework
 
-### 2.1 The Contrastive Learning Framework
-
-Two augmented views share an encoder $f$ and projection head $g$. Optimize projected features; retain encoder features downstream.
+Two independently sampled transformations are applied to each image. These produce a positive pair: two views of the same original image. Each view passes through the same ResNet encoder $f$, followed by a small projection network $g$:
 
 ```math
-h_i=f(\widetilde x_i),\quad z_i=g(h_i),\qquad
-\ell_{i,j}=-\log
-\frac{\exp(\operatorname{sim}(z_i,z_j)/\tau)}
-{\sum_{k\ne i}^{2N}\exp(\operatorname{sim}(z_i,z_k)/\tau)}.
+h_i=f(\widetilde x_i),\qquad z_i=g(h_i).
 ```
 
-The denominator includes the positive; the batch supplies negatives.
+The encoder representation $h_i$ is the output after global average pooling. The projection head is a two-layer MLP with a ReLU activation. The contrastive objective acts on $z_i$; downstream tasks use $h_i$ after discarding the head.
 
-### 2.2 Training with Large Batch Size
+<p align="center">
+  <img src="https://1.bp.blogspot.com/--vH4PKpE9Yo/Xo4a2BYervI/AAAAAAAAFpM/vaFDwPXOyAokAC8Xh852DzOgEs22NhbXwCLcBGAsYHQ/s1600/image4.gif" alt="Two augmented views pass through a shared encoder and projection head" width="600">
+</p>
 
-LARS and global batch normalization support large-batch training.
+<p align="center"><em>SimCLR framework. Illustration from the authors' implementation.</em></p>
 
-### 2.3 Evaluation Protocol
+For a minibatch of $N$ images, augmentation creates $2N$ views. Each view has one positive counterpart and $2N-2$ negatives from the other images. The normalized temperature-scaled cross entropy loss, or NT-Xent, is
 
-Train a linear classifier over a frozen encoder.
+```math
+\ell_{i,j}=-\log
+\frac{\exp(\operatorname{sim}(z_i,z_j)/\tau)}
+{\sum_{k=1}^{2N}\mathbf 1_{[k\ne i]}
+\exp(\operatorname{sim}(z_i,z_k)/\tau)}.
+```
 
-## 3 Data Augmentation for Contrastive Representation Learning
+Here $\operatorname{sim}$ is cosine similarity and $\tau$ is the temperature. The denominator includes the positive view and excludes the anchor itself. Both directions of every positive pair contribute to the batch loss:
 
-### 3.1 Composition of Data Augmentation Operations
+```math
+\mathcal L=\frac{1}{2N}\sum_{k=1}^{N}
+\left[\ell_{2k-1,2k}+\ell_{2k,2k-1}\right].
+```
 
-Cropping plus color distortion reduces shortcut learning.
+### Data augmentation
 
-### 3.2 Stronger Augmentation than Supervised Learning
+The augmentation pipeline combines random cropping and resizing, color distortion, and Gaussian blur. Cropping creates views that can contain different parts of an object or different amounts of context. Color distortion makes it harder to identify a positive pair by its color distribution alone.
 
-Effective augmentation depends on the learning objective.
+The combination matters more than any single transformation. Without strong color changes, the network can exploit similarities between the color histograms of crops. This solves the training task without requiring the representations needed for recognition. Stronger augmentation works particularly well for contrastive learning, even when the same transformations would be less useful in supervised training.
 
-## 4 Architectures for Encoder and Head
+### Encoder and projection head
 
-### 4.1 Bigger Models
+The paper studies deeper and wider ResNets. Increasing model capacity improves the learned representations. A nonlinear projection head also improves the representation before the head, even though the head is discarded afterward.
 
-Depth and width improve representations.
+One explanation is that the contrastive loss encourages invariance to the chosen transformations. Applying all of that pressure directly to the downstream representation can remove useful information. The head provides a separate space in which to enforce agreement.
 
-### 4.2 Nonlinear Projection Head
+### Training and evaluation
 
-Features before the head transfer better than projected features.
+Training uses large batches, with up to 8,192 original images, and the LARS optimizer. Global batch normalization shares statistics across devices, preventing a network from exploiting local batch statistics to identify matching views. Larger batches provide more negatives per update. Longer training also helps and reduces some of the gap between smaller and larger batches.
 
-## 5 Loss Functions and Batch Size
+The main evaluation freezes the encoder and trains a linear classifier on its representations. Additional experiments fine-tune the model with limited labels and evaluate transfer to other datasets.
 
-### 5.1 Normalization and Temperature
+## Results
 
-Both affect contrastive learning quality.
+### ImageNet classification
 
-### 5.2 Larger Batches and Longer Training
+SimCLR achieves **76.5% ImageNet top-1 accuracy** with a linear classifier on a four-times-wider ResNet-50. This headline result uses a wider ResNet-50, rather than the standard-width model. It matches the reported supervised standard ResNet-50 baseline despite learning the encoder without ImageNet labels.
 
-Both help; longer training mitigates smaller batches.
+### Limited labels and transfer
 
-## 6 Comparison with State-of-the-art
+Fine-tuning with only 1% of the ImageNet labels reaches **85.8% top-5 accuracy**. Transfer experiments on twelve natural-image classification datasets find that SimCLR matches or exceeds the supervised baseline on ten.
 
-Evaluate linear probing, limited-label fine-tuning, and transfer.
+### Ablation studies
 
-## 7 Related Work
-
-Contrast with memory-bank and pretext-task methods.
-
-## 8 Conclusion
-
-Simple components jointly enable strong self-supervised learning.
+Removing feature normalization or choosing an unsuitable temperature reduces performance. The nonlinear projection head outperforms a linear head or no head. Augmentation composition and sufficient training time also have large effects. These experiments explain why a compact framework can perform well: the training task and optimization choices determine the quality of the representation.

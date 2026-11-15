@@ -5,84 +5,74 @@
 > **Publication:** CVPR 2022\
 > **Link:** [https://arxiv.org/abs/2201.03545](https://arxiv.org/abs/2201.03545)
 
-*Draft — follows the paper's main section order; appendices are condensed.*
 
-## Abstract
+## Abstract & Introduction
 
-ConvNeXt modernizes a standard ResNet using design choices associated with vision Transformers, producing a convolution-only backbone competitive with hierarchical Transformers.
+Vision Transformers had begun to outperform conventional CNNs on image classification and dense prediction. However, these comparisons also involved different training procedures and architectural choices. Swin, for example, introduces locality and a feature hierarchy that resemble established CNN designs.
 
-## 1 Introduction
+This paper asks how far a standard ConvNet can go when updated with those choices. Starting from ResNet-50, the authors progressively change its training and architecture to produce ConvNeXt. The final network uses convolution throughout and competes with hierarchical Transformers on classification, detection, and segmentation.
 
-Swin combines Transformer blocks with CNN-like locality and hierarchy. This motivates asking how much of its advantage comes from attention itself, rather than modern training and architectural choices.
+## Methods
 
-## 2 Modernizing a ConvNet: a Roadmap
+### Training techniques
 
-The paper progressively changes a ResNet-50 baseline. The cumulative ablations describe a particular design path; individual gains should not be treated as independent or universally additive.
+The first change strengthens the training recipe before modifying the network. Training runs for 300 epochs using AdamW, modern augmentation, and regularization, including Mixup, CutMix, RandAugment, random erasing, and stochastic depth.
 
-### 2.1 Training Techniques
+This raises the ResNet-50 baseline from 76.1% to 78.8% ImageNet top-1 accuracy. A substantial part of the initial difference therefore comes from training.
 
-First strengthen training: use AdamW, a longer schedule, and modern augmentation and regularization. This improves the baseline before changing its architecture.
+### Macro design
 
-### 2.2 Macro Design
+The stage-depth ratio is changed from ResNet-50's $(3,4,6,3)$ to $(3,3,9,3)$, allocating more blocks to the third stage. The original convolution and max-pooling stem is replaced with a $4\times4$ stride-four convolution. This produces non-overlapping patch-like features while retaining a convolutional implementation.
 
-Redistribute blocks toward the third stage, using a $(3,3,9,3)$ stage-depth pattern in the ResNet-50-based exploration. Replace the overlapping convolution/pooling stem with a $4\times4$, stride-four patchifying convolution.
+### Depthwise convolutions and inverted bottlenecks
 
-### 2.3 ResNeXt-ify
+The spatial convolution becomes a depthwise convolution, applying one spatial filter per channel. Channel mixing is handled separately by pointwise transformations. The network width is adjusted to recover capacity.
 
-Use depthwise convolutions, separating spatial mixing within channels from pointwise channel mixing. Adjust width to maintain competitive capacity.
+The residual block also adopts an inverted bottleneck. Its intermediate representation expands to four times the input width before contracting again, resembling the channel expansion in a Transformer's MLP.
 
-### 2.4 Inverted Bottleneck
+### Larger kernels
 
-Expand channels in the block's intermediate representation, resembling the expansion used by Transformer MLPs.
+The depthwise convolution moves before the channel expansion, where it is cheaper to apply. Its kernel grows from $3\times3$ to $7\times7$, increasing the region mixed by each block. Increasing the kernel further gives little additional benefit in the reported experiment.
 
-### 2.5 Large Kernel Sizes
+### Micro design
 
-Move depthwise spatial mixing before the pointwise expansion and increase the kernel size. A $7\times7$ kernel provides a favorable operating point in the studied design.
+ReLU is replaced with GELU. Extra activation and normalization layers are removed, leaving a block with one activation between its pointwise transformations. Layer normalization replaces batch normalization, and separate downsampling layers connect the stages.
 
-### 2.6 Micro Design
-
-Use GELU, fewer activation and normalization layers, LayerNorm instead of BatchNorm, and separate downsampling layers. The final residual block combines depthwise spatial mixing with a channel-expanding and channel-contracting MLP.
+A simplified block is
 
 ```math
 x_{\mathrm{out}}
-=x+\operatorname{PW}_{\mathrm{contract}}
-\left(\operatorname{GELU}
-\left(\operatorname{PW}_{\mathrm{expand}}
-\left(\operatorname{LN}(\operatorname{DWConv}_{7\times7}(x))\right)\right)\right).
+=x+\operatorname{PW}_{\mathrm{contract}}\left(
+\operatorname{GELU}\left(
+\operatorname{PW}_{\mathrm{expand}}\left(
+\operatorname{LN}(\operatorname{DWConv}_{7\times7}(x))
+\right)\right)\right).
 ```
 
-This schematic omits layer scaling and stochastic depth.
+The implementation also includes layer scaling and stochastic depth. These changes are evaluated along a cumulative modernization path, so each measured gain depends on the modifications already made.
 
-## 3 Empirical Evaluations on ImageNet
+### Experiments
 
-### 3.1 Settings
+ConvNeXt-T, S, B, L, and XL vary stage depths and channel widths. Classification experiments use ImageNet-1K, with an additional setting that pretrains on ImageNet-22K. Downstream experiments replace the backbone in established detection and segmentation frameworks.
 
-Evaluate multiple model sizes under ImageNet-1K training and ImageNet-22K pretraining followed by fine-tuning. Match data and training conditions when comparing backbones.
+## Results
 
-### 3.2 Results
+### ImageNet classification
 
-ConvNeXt competes favorably with Swin across model scales. Larger datasets and higher-resolution fine-tuning affect headline results, so retain those conditions when recording accuracy.
+At $224\times224$ resolution with ImageNet-1K training, ConvNeXt-T reaches **82.1% top-1 accuracy**, compared with Swin-T's 81.3%, at approximately the same FLOPs. ConvNeXt-B reaches **83.8%**, compared with Swin-B's 83.5%.
 
-### 3.3 Isotropic ConvNeXt vs. ViT
+ImageNet-22K pretraining and higher-resolution fine-tuning improve larger models further. ConvNeXt-XL reaches **87.8%** at $384\times384$. This result uses more pretraining data and a larger model than the ImageNet-1K-only comparisons.
 
-Test constant-resolution convolutional models to separate the contribution of convolutional blocks from that of a hierarchical architecture.
+### Isotropic models
 
-## 4 Empirical Evaluation on Downstream Tasks
+The paper also studies ConvNeXt variants that preserve one spatial resolution throughout the network, as ViT does. Their competitive results indicate that the updated convolutional block is useful beyond the hierarchical version.
 
-**COCO detection and instance segmentation.** Plug ConvNeXt into established detection frameworks and compare against other backbones.
+### Detection and segmentation
 
-**ADE20K semantic segmentation.** Evaluate dense prediction using a segmentation head.
+ConvNeXt transfers well to COCO object detection and instance segmentation, and to ADE20K semantic segmentation. These experiments use the backbone's intermediate feature maps at several resolutions. Its gains therefore extend beyond image-level classification.
 
-**Efficiency.** FLOPs alone do not determine hardware throughput; operation types and implementation matter.
+### Efficiency
 
-## 5 Related Work
+ConvNeXt uses standard convolutional operations and requires no window partitioning or relative-position interpolation. The measured speed advantage depends on the hardware and implementation. The A100 experiments show a larger throughput advantage over Swin than the V100 experiments, despite similar theoretical FLOPs.
 
-Connect ConvNeXt to grouped/depthwise convolutions, inverted bottlenecks, and hybrid vision architectures.
-
-## 6 Conclusions
-
-The experiments challenge the assumption that attention is necessary for competitive visual backbones. Training and convolutional design remain substantial sources of improvement.
-
-## Appendix notes
-
-The supplements document training, robustness, detailed architectures, hardware benchmarks, and limitations.
+The results show that a carefully updated ConvNet remains a strong visual backbone. Modern training and architecture choices account for much of the progress that had accompanied the adoption of Transformers.

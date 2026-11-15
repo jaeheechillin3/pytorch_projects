@@ -5,112 +5,100 @@
 > **Publication:** ICCV 2021\
 > **Link:** [https://arxiv.org/abs/2103.14030](https://arxiv.org/abs/2103.14030)
 
-## Abstract
 
-Swin builds a hierarchical vision backbone using local self-attention and shifted window partitions. It targets classification, detection, and segmentation within one architecture.
+## Abstract & Introduction
 
-## 1 Introduction
+ViT applies a Transformer directly to image patches, but its single feature-map scale and global attention make it difficult to use for high-resolution dense prediction. Objects also vary greatly in size, requiring features that describe both fine detail and larger spatial regions.
 
-Vanilla ViT maintains a single feature-map scale and uses global attention. Dense vision tasks require finer spatial information and efficient processing of high-resolution images. Swin introduces a feature hierarchy while restricting attention to fixed-size windows. Patch merging handles changes in spatial scale; shifted windows connect local attention regions. These solve different problems and are both needed for a general-purpose backbone.
+This paper introduces the Swin Transformer, a hierarchical backbone for classification, object detection, and segmentation. It computes self-attention within local windows and shifts the window partition between consecutive blocks. This limits computation while allowing information to pass between neighboring windows.
 
-## 2 Related Work
+## Methods
 
-The paper compares CNN hierarchies, local self-attention, CNN–attention hybrids, and ViT-style backbones. Its key combination is multiscale features with efficient cross-window communication. CNNs provide a useful precedent: shallow layers preserve fine detail, while deeper layers summarize larger regions. Swin adopts this hierarchy without replacing attention with a fixed convolutional kernel. Its attention weights still depend on the image content.
+### Overall architecture
 
-## 3 Method
+An RGB image is split into non-overlapping $4\times4$ patches. Each patch contains 48 values, which a linear layer projects into a $C$-dimensional embedding. Transformer blocks process this initial grid without changing its spatial resolution.
 
-### 3.1 Overall Architecture
-
-Split RGB images into $4\times4$ patches and linearly embed them. Four stages produce feature maps at resolutions $H/4$, $H/8$, $H/16$, and $H/32$. Patch merging concatenates each $2\times2$ group, then projects $4C$ channels into $2C$.
+The network has four stages. Between stages, _patch merging_ concatenates each $2\times2$ group of neighboring tokens and projects the resulting $4C$ features into $2C$ dimensions. The feature resolutions are therefore $H/4$, $H/8$, $H/16$, and $H/32$, with increasing channel width.
 
 <p align="center">
-  <!-- TODO: Add ./images/figure3.png, then uncomment the image below. -->
-  <!-- <img src="./images/figure3.png" alt="Swin-T hierarchy and two successive Transformer blocks." width="600"> -->
+  <img src="https://arxiv.org/html/2103.14030v2/figs/teaser11.png" alt="Hierarchical Swin features compared with single-scale ViT features" width="600">
 </p>
 
-<p align="center"><em>Figure 3. Swin-T hierarchy and two successive Transformer blocks. [Image to add]</em></p>
+<p align="center"><em>Figure 1. Swin builds a feature hierarchy by merging neighboring patches.</em></p>
 
-Each block uses pre-normalization, attention, and a two-layer GELU MLP, with residual connections around both sublayers. Merging reduces token count by four while doubling channel width, so deeper stages trade spatial detail for richer features. A $224\times224$ input begins with a $56\times56$ token grid and ends with a $7\times7$ grid. These intermediate outputs can feed a feature pyramid, allowing a downstream detector to combine fine and coarse spatial information.
+For a $224\times224$ image, the token grid begins at $56\times56$ and ends at $7\times7$. Detection and segmentation frameworks can use outputs from several stages. Classification instead applies global average pooling to the final-stage features, followed by a linear classifier.
 
-### 3.2 Shifted Window based Self-Attention
+### Window-based self-attention
 
-**Window attention.** For a feature map of $h\times w$ tokens and windows of $M\times M$ tokens:
+Global attention compares every token with every other token. For an $h\times w$ token grid with channel width $C$, its cost is
 
 ```math
-\Omega(\mathrm{MSA})=4hwC^2+2(hw)^2C,
-\qquad
+\Omega(\mathrm{MSA})=4hwC^2+2(hw)^2C.
+```
+
+Swin divides the grid into non-overlapping windows containing $M\times M$ tokens and computes attention independently within each window:
+
+```math
 \Omega(\mathrm{W\!-\!MSA})=4hwC^2+2M^2hwC.
 ```
 
-With fixed $M$, window attention scales linearly with token count. This describes scaling with image area, not image side length. Global attention compares every token with every other token, producing a quadratic score matrix. Window attention instead computes many smaller matrices. The projection cost remains, so reducing attention interactions does not remove every source of computation.
+For a fixed window size, the cost grows linearly with the number of image tokens. The default window contains $7\times7$ tokens. Restricting attention this way makes the early high-resolution stages practical.
 
-**Shifted windows.** Alternate regular windows and windows shifted by $\lfloor M/2\rfloor$. Neighboring blocks therefore exchange information across previous window boundaries. A regular-window block alone cannot mix tokens across its partition. Shifting changes which tokens share a window, expanding the effective receptive field over successive blocks.
+### Shifted windows
 
-<p align="center">
-  <!-- TODO: Add ./images/figure2.png, then uncomment the image below. -->
-  <!-- <img src="./images/figure2.png" alt="Regular and shifted partitions create cross-window connections." width="600"> -->
-</p>
-
-<p align="center"><em>Figure 2. Regular and shifted partitions create cross-window connections. [Image to add]</em></p>
-
-**Efficient computation.** Implement the shift cyclically, then mask artificial wraparound connections. This preserves the number of batched windows. Without the mask, the cyclic roll would introduce attention between originally distant image boundaries. The mask blocks these artificial connections rather than masking future tokens as in autoregressive attention.
+A fixed partition would prevent communication between windows. Swin therefore alternates regular windows with windows shifted by $\lfloor M/2\rfloor$ tokens along each spatial axis.
 
 <p align="center">
-  <!-- TODO: Add ./images/figure4.png, then uncomment the image below. -->
-  <!-- <img src="./images/figure4.png" alt="Cyclic shifting and attention masking for efficient batching." width="600"> -->
+  <img src="https://arxiv.org/html/2103.14030v2/figs/teaser_v4.png" alt="Regular and shifted window partitions in successive layers" width="600">
 </p>
 
-<p align="center"><em>Figure 4. Cyclic shifting and attention masking for efficient batching. [Image to add]</em></p>
+<p align="center"><em>Figure 2. Shifting the partition connects neighboring windows across successive blocks.</em></p>
 
-**Relative position bias.** Add a learned bias based on relative token offsets:
+Tokens that belonged to separate windows can now attend to one another. Repeating this pattern lets information spread across the feature map.
+
+The implementation performs a cyclic shift toward the top left before partitioning. Some resulting windows contain regions that were originally far apart at image boundaries. An attention mask blocks those artificial connections. This preserves the number of batched windows and avoids the overhead of separately padding many small boundary windows.
+
+### Transformer blocks and relative position
+
+Each block applies layer normalization before attention and before a two-layer GELU MLP. Both sublayers have residual connections:
+
+```math
+\widehat z^\ell=\operatorname{W\!-\!MSA}(\operatorname{LN}(z^{\ell-1}))+z^{\ell-1},
+\qquad
+z^\ell=\operatorname{MLP}(\operatorname{LN}(\widehat z^\ell))+\widehat z^\ell.
+```
+
+The next block uses shifted-window attention in the same structure. Within each attention head, a learned relative position bias is added to the query–key scores:
 
 ```math
 \operatorname{Attention}(Q,K,V)
 =\operatorname{softmax}(QK^\top/\sqrt d+B)V.
 ```
 
-Within an $M\times M$ window, each coordinate offset ranges from $-M+1$ to $M-1$. A compact table of relative offsets supplies the pairwise biases. This encodes spatial relationships while the query–key term continues to measure content similarity. The bias is therefore complementary to attention rather than a replacement for it.
+The bias depends on the relative horizontal and vertical offset of a pair of tokens. An $M\times M$ window requires a table covering $(2M-1)^2$ possible offsets per head.
 
-### 3.3 Architecture Variants
+### Model variants and training
 
-Swin-T, S, B, and L vary channel width and stage depth. Swin-T uses initial width $C=96$ and stage depths $(2,2,6,2)$; Swin-S increases the third-stage depth to 18. The default window width is seven tokens. Compare model size, FLOPs, and measured throughput separately. Classification uses the final-stage representation after pooling, whereas dense prediction uses outputs from multiple stages. The same backbone thus supports tasks with different output structures.
+Swin-T uses initial width 96 and stage depths $(2,2,6,2)$. Swin-S increases the third stage to 18 blocks. Swin-B and Swin-L increase width further.
 
-## 4 Experiments
+ImageNet-1K training uses AdamW for 300 epochs. Larger models are also pretrained on ImageNet-22K, then fine-tuned for ImageNet-1K classification. The experiments additionally use Swin as the backbone in COCO detection and ADE20K segmentation frameworks.
 
-### 4.1 Image Classification on ImageNet-1K
+## Results
 
-Distinguish training on ImageNet-1K from ImageNet-22K pretraining. Swin-T reaches 81.3% top-1 at $224^2$; the headline 87.3% uses the larger Swin-L with additional pretraining. The standard ImageNet-1K recipe uses AdamW for 300 epochs. Resolution and pretraining data must match before interpreting accuracy or throughput differences. The comparisons also illustrate why the headline result cannot describe every model in the family: Swin-T and Swin-L differ substantially in capacity, training data, and evaluation resolution.
+### Image classification
 
-<p align="center">
-  <!-- TODO: Add ./images/table1.png, then uncomment the image below. -->
-  <!-- <img src="./images/table1.png" alt="ImageNet accuracy, parameters, FLOPs, and throughput across backbones." width="650"> -->
-</p>
+Swin-T achieves **81.3% ImageNet top-1 accuracy** at $224\times224$, with 29 million parameters and 4.5 GFLOPs. Swin-S reaches 83.0%, and Swin-B reaches 83.5% at the same resolution with ImageNet-1K training.
 
-<p align="center"><em>Table 1. ImageNet accuracy, parameters, FLOPs, and throughput across backbones. [Image to add]</em></p>
+The larger Swin-L reaches **87.3%** using ImageNet-22K pretraining and $384\times384$ fine-tuning. This is the paper's headline classification result.
 
-### 4.2 Object Detection on COCO
+### Object detection and segmentation
 
-Replace detector backbones with Swin. Evaluate both bounding-box and instance-mask AP rather than attributing complete detector results to the backbone alone. With Cascade Mask R-CNN, Swin-T reaches 50.5 box AP versus 46.3 for ResNet-50 under the compared setup. Keeping the detector and training recipe fixed makes this comparison more informative about backbone quality than comparing unrelated complete detection systems.
+With Cascade Mask R-CNN, Swin-T reaches **50.5 box AP** on COCO, compared with 46.3 for ResNet-50 in the corresponding comparison. The hierarchy supplies feature maps at the resolutions needed by the detector.
 
-### 4.3 Semantic Segmentation on ADE20K
+For ADE20K semantic segmentation, UperNet with Swin-S reaches **49.3 mIoU**. ImageNet-22K-pretrained Swin-L reaches **53.5 mIoU**. These results show that the backbone transfers to tasks requiring predictions across the image.
 
-Use the hierarchy in a segmentation framework. The experiments test whether classification gains transfer to dense prediction. UperNet with Swin-S reaches 49.3 mIoU, while the larger ImageNet-22K-pretrained Swin-L reaches 53.5.
+### Ablation studies
 
-### 4.4 Ablation Study
+Removing window shifts lowers Swin-T's ImageNet accuracy from 81.3% to 80.2% and COCO box AP from 50.5 to 47.7. Relative position bias also improves performance. The shift ablation demonstrates that communication across windows contributes beyond the efficiency of local attention alone.
 
-Removing window shifts reduces performance. For Swin-T, shifting improves ImageNet top-1 from 80.2% to 81.3% and COCO box AP from 47.7 to 50.5. Relative position bias also helps. These controlled comparisons isolate the proposed mechanisms more directly than the headline benchmark scores. In particular, the shift ablation tests whether cross-window communication matters while retaining local attention. Compare attention variants using measured latency as well as theoretical computation.
-
-<p align="center">
-  <!-- TODO: Add ./images/table4.png, then uncomment the image below. -->
-  <!-- <img src="./images/table4.png" alt="Ablations of window shifting and positional information." width="650"> -->
-</p>
-
-<p align="center"><em>Table 4. Ablations of window shifting and positional information. [Image to add]</em></p>
-
-## 5 Conclusion
-
-A Transformer can recover useful spatial hierarchy and locality while retaining content-dependent attention.
-
-## Appendix notes
-
-Detailed architectures, training recipes, resolution experiments, and the Swin MLP variant expand the main comparisons.
+The paper's [Tables 1–4](https://arxiv.org/pdf/2103.14030) contain the classification, dense-prediction, and ablation comparisons.

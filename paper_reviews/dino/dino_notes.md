@@ -5,95 +5,84 @@
 > **Publication:** ICCV 2021\
 > **Link:** [https://arxiv.org/abs/2104.14294](https://arxiv.org/abs/2104.14294)
 
-*Draft — follows the paper's main section order; appendices are condensed.*
 
-## Abstract
+## Abstract & Introduction
 
-DINO learns visual representations through self-distillation without labels. Self-supervised ViTs show strong nearest-neighbor classification and attention maps that often expose object structure.
+Vision Transformers can learn strong image representations with supervised pretraining, but the pretraining objective may affect what those representations contain. This paper examines the properties that emerge when a ViT is trained without labels.
 
-## 1 Introduction
+The proposed method, DINO, learns through _self-distillation with no labels_. A student network predicts the output of a teacher network for another view of the same image. The teacher is updated from the student during training. The resulting features work well for nearest-neighbor classification, and the attention maps often separate objects from their backgrounds.
 
-Image-level supervision compresses an image into a category label. The paper asks whether self-supervision can produce richer ViT features and reveal properties less apparent after supervised training.
+## Methods
 
-## 2 Related Work
+### Student and teacher networks
 
-Relate DINO to contrastive learning, clustering, BYOL-style self-supervision, and knowledge distillation. Its teacher is built during training rather than supplied as a fixed, pretrained model.
-
-## 3 Approach
-
-### 3.1 SSL with Knowledge Distillation
-
-Generate two global crops and several smaller local crops. The teacher processes global views; the student processes all views. Match distributions from different views of the same image:
+Both networks contain an image backbone and a projection head. Their architectures are the same, but their parameters differ. Each produces a vector of logits, which a temperature softmax converts into a probability distribution:
 
 ```math
-\mathcal L
-=\sum_{v\in V_{\mathrm{global}}}
+P_s(x)_k=
+\frac{\exp(g_{\theta_s}(x)_k/\tau_s)}
+{\sum_j\exp(g_{\theta_s}(x)_j/\tau_s)}.
+```
+
+The teacher distribution is computed similarly, with its own temperature and centered logits. These output dimensions are learned feature assignments; they do not correspond to annotated ImageNet categories.
+
+For two views of an image, the student is trained to match the teacher using cross entropy. The full objective sums across different views:
+
+```math
+\mathcal L=
+\sum_{v\in V_{\mathrm{global}}}
 \sum_{\substack{v'\in V\\v'\ne v}}
 H\!\left(\operatorname{sg}[P_t(v)],P_s(v')\right).
 ```
 
-Here $H(p,q)=-\sum_k p_k\log q_k$, and $\operatorname{sg}$ stops teacher gradients.
+Here $H(p,q)=-\sum_k p_k\log q_k$, and stop-gradient prevents the teacher from receiving backpropagated updates.
 
-**Teacher update.** Update teacher weights using an exponential moving average of student weights:
+### Momentum teacher
+
+The teacher parameters follow an exponential moving average of the student parameters:
 
 ```math
 \theta_t\leftarrow m\theta_t+(1-m)\theta_s.
 ```
 
-**Avoiding collapse.** Center teacher logits using a running mean and sharpen the resulting distribution with temperature scaling. Centering and sharpening counter different degenerate solutions; agreement between networks alone is insufficient.
+The momentum increases toward one during training. This produces a slowly changing target that aggregates information from successive student models. The teacher is learned together with the student, so no separately pretrained teacher is required.
 
-**Architecture.** Both branches contain a backbone and a projection head. Output dimensions represent learned assignments, not ground-truth class labels.
+### Centering and sharpening
 
-### 3.2 Implementation and Evaluation Protocols
+Agreement alone permits uninformative solutions, such as predicting the same distribution for every image. DINO combines two mechanisms to avoid this collapse.
 
-Study both ResNets and ViTs. Evaluate frozen representations with weighted $k$-nearest neighbors and linear classification, alongside downstream transfer.
+Centering subtracts a running mean from the teacher logits, reducing the tendency for one output dimension to dominate. Sharpening uses a low teacher temperature to make the target distribution more concentrated. Centering alone encourages overly uniform predictions, while sharpening alone can favor one dominant dimension. Their combination balances these tendencies.
 
-## 4 Main Results
+### Multi-crop training
 
-### 4.1 Comparing with SSL Frameworks on ImageNet
+Each image produces two large global crops and several smaller local crops. The teacher processes only the global views, while the student processes all views. Matching a local view to a teacher's global prediction encourages the student to relate image parts to a larger scene.
 
-Compare methods with matched backbones as well as across architectures. The reported ViT-Base linear evaluation reaches 80.1%; this is distinct from the 78.3% nearest-neighbor result for a small-patch ViT-S.
+The same backbone handles the different crop sizes. Local crops provide extra training views at a lower cost than processing the same number of full-size images.
 
-### 4.2 Properties of ViT Trained with SSL
+### Experiments
 
-#### 4.2.1 Nearest Neighbor Retrieval with DINO ViT
+The paper evaluates both ResNets and ViTs pretrained on ImageNet without labels. Linear evaluation trains a classifier over frozen representations. Weighted nearest-neighbor evaluation instead predicts a label directly from nearby training-image features, with no fitted classifier.
 
-Study image retrieval and copy detection using frozen features.
+## Results
 
-#### 4.2.2 Discovering the Semantic Layout of Scenes
+### ImageNet classification
 
-Inspect final-layer class-token attention and test video object segmentation through feature correspondences. Visually coherent attention maps are an empirical observation, not proof of causal explanations.
+DINO reaches **80.1% top-1 accuracy** in linear evaluation with a small-patch ViT-Base. A small-patch ViT-S reaches **78.3%** using nearest-neighbor classification. The latter result shows that images with related semantics are already grouped usefully in the frozen feature space.
 
-#### 4.2.3 Transfer Learning on Downstream Tasks
+### Object structure and retrieval
 
-Evaluate whether pretrained features remain useful beyond ImageNet classification.
+<p align="center">
+  <img src="https://arxiv.org/html/2104.14294v2/attn6.png" alt="Final-layer class-token attention maps from a self-supervised ViT" width="600">
+</p>
 
-## 5 Ablation Study of DINO
+<p align="center"><em>Figure 1. Class-token attention from a ViT trained without labels.</em></p>
 
-### 5.1 Importance of the Different Components
+Several attention heads highlight coherent foreground objects even though training provides no segmentation masks. The paper also propagates object labels through video using feature correspondences and evaluates image retrieval and copy detection. These experiments examine spatial and instance information beyond classification.
 
-Study multi-crop training, the momentum teacher, and patch size.
+### Ablation studies
 
-### 5.2 Impact of the Choice of Teacher Network
+The momentum teacher and multi-crop training both improve representation quality. Smaller image patches also help substantially, although they lengthen the token sequence and increase computation.
 
-Compare teacher construction and training dynamics.
+The centering and sharpening experiments show that the teacher's output distribution is essential to stable learning. The method also remains effective with smaller batches, making it less dependent on the very large batches used to supply negatives in some contrastive approaches.
 
-### 5.3 Avoiding Collapse
-
-Investigate the interaction between centering and sharpening.
-
-### 5.4 Compute Requirements
-
-Compare representation quality under different computational budgets.
-
-### 5.5 Training with Small Batches
-
-Examine whether the method remains practical without contrastive learning's very large batches.
-
-## 6 Conclusion
-
-The pretraining objective changes the properties of a ViT's learned features. Self-distillation provides a route to useful representations without explicit negative pairs.
-
-## Appendix notes
-
-Projection-head design, teacher temperatures, crop settings, and evaluation recipes expand the main ablations.
+Together, the experiments show that self-supervision changes the features learned by a ViT. DINO produces useful global image representations while retaining spatial information visible in its attention maps.

@@ -5,76 +5,69 @@
 > **Publication:** Nature Methods 2021\
 > **Link:** [https://www.nature.com/articles/s41592-020-01008-z](https://www.nature.com/articles/s41592-020-01008-z)
 
-*Draft — journal metadata/results are distinguished from the accessible [author preprint](https://arxiv.org/abs/1904.08128v2), used for the detailed outline.*
 
-## Abstract
+## Abstract & Introduction
 
-nnU-Net automates dataset-specific segmentation pipelines rather than introducing a complex backbone.
+Biomedical segmentation datasets vary in image dimensions, voxel spacing, modality, and target size. A pipeline that works well for one dataset may perform poorly on another, even when both use a U-Net. Architecture is only one part of the problem; preprocessing, training patches, loss functions, and inference settings must work together.
 
-## Introduction
-
-Biomedical datasets vary in spacing, modality, size, and class balance. Reliable pipelines must coordinate these properties with hardware constraints.
-
-## Results
-
-### Automatic Dataset Adaptation
-
-Map a dataset fingerprint into a pipeline fingerprint using fixed defaults, inferred rules, and empirical selection.
-
-### Diverse Structures and Image Properties
-
-Evaluate heterogeneous organs, lesions, and imaging modalities.
-
-### Comparison with Specialized Pipelines
-
-The journal article evaluates 23 public datasets. The accessible preprint reports an earlier evaluation scope; do not interchange their counts.
-
-### Pipeline Configuration versus Architecture
-
-The KiTS analysis examines configuration choices alongside architectural differences.
-
-### Dataset-dependent Configurations
-
-A strong configuration need not transfer unchanged across datasets.
-
-### Robust Design across Tasks
-
-Use multiple tasks to evaluate design decisions.
-
-### Out-of-the-box Availability
-
-The released framework automates configuration and training for new segmentation datasets.
-
-## Discussion
-
-A systematically configured U-Net provides a demanding baseline.
+This paper introduces nnU-Net, a framework that configures a segmentation pipeline for a new dataset automatically. It collects established design choices into a set of defaults and adaptation rules, then uses cross-validation to select the final configuration. Its backbone remains a conventional U-Net.
 
 ## Methods
 
-### Dataset Fingerprints
+### Dataset and pipeline fingerprints
 
-Summarize image shapes, voxel spacing, modalities, classes, and intensity statistics.
+The framework first summarizes the dataset in a _dataset fingerprint_. This includes image shapes, voxel spacings, modalities, class information, and intensity statistics. A _pipeline fingerprint_ records the corresponding choices for preprocessing, network configuration, training, and inference.
 
-### Pipeline Fingerprints
+The mapping between the two is organized into three groups. Blueprint parameters provide defaults that work across datasets. Inferred parameters adapt the pipeline using dataset properties and memory constraints. Empirical parameters are selected through training and validation.
 
-Combine the decisions defining preprocessing, architecture, training, and inference.
+### Blueprint parameters
 
-### Blueprint Parameters
+The network uses an encoder–decoder structure with skip connections. Convolutions, instance normalization, and leaky ReLU form its basic processing blocks. Instance normalization supports the small batch sizes common in 3D segmentation. Deep supervision adds training signals at multiple decoder resolutions.
 
-Use U-Net templates, instance normalization, deep supervision, augmentation, and Dice-plus-cross-entropy loss.
+Training combines cross entropy with a Dice loss. Cross entropy supervises individual voxel predictions, while Dice measures overlap between a predicted region and its target. For one class, the overlap can be written as
 
-### Inferred Parameters
+```math
+\operatorname{Dice}(p,y)
+=\frac{2\sum_i p_i y_i+\epsilon}
+{\sum_i p_i+\sum_i y_i+\epsilon}.
+```
 
-Coordinate resampling, normalization, topology, patch size, and batch size within memory limits.
+Here $p_i$ is a soft prediction and $y_i$ is the target indicator. The expression illustrates the overlap term; class aggregation and smoothing follow the implementation.
 
-### Empirical Parameters
+Spatial and intensity augmentation improve robustness. Foreground oversampling makes training patches more likely to contain the structures being segmented, which is useful when an organ or lesion occupies only a small part of the image.
 
-Cross-validation selects configurations/ensembles and useful postprocessing.
+### Inferred parameters
 
-### Implementation Details
+Voxel spacing determines how much physical space each voxel represents. The framework chooses a target spacing and resamples images and labels accordingly. Strongly anisotropic datasets require different treatment along their low-resolution axis; early operations can remain effectively two-dimensional until the feature spacing becomes more balanced.
 
-Compare 2D, full-resolution 3D, and cascaded 3D configurations.
+Intensity normalization also depends on modality. CT intensities have a consistent physical interpretation, allowing dataset-level statistics, while MRI intensities are generally normalized per image.
 
-## Supplementary notes
+Patch size, network depth, pooling, and batch size are chosen together within the available memory. Larger patches provide more anatomical context but consume more memory. The configuration rules balance this context against the need to train a sufficiently deep network.
 
-Dataset descriptions and generated pipelines document reproducibility.
+### Candidate configurations and selection
+
+nnU-Net considers a 2D U-Net, a full-resolution 3D U-Net, and, where appropriate, a 3D cascade. The cascade first segments a lower-resolution volume. A second network receives the full-resolution image together with the coarse prediction, adding global context when full-resolution patches cover too little anatomy.
+
+Cross-validation determines which configuration or ensemble performs best. Validation also determines whether postprocessing, such as retaining the largest connected component for a class, improves results. This prevents a rule that helps one dataset from being applied indiscriminately to every task.
+
+Inference combines predictions from overlapping patches. Weighting reduces artifacts near patch boundaries, and test-time mirroring can average predictions across transformed inputs.
+
+## Results
+
+### Diverse datasets
+
+The published Nature Methods article evaluates nnU-Net on **23 public datasets** spanning different modalities and segmentation targets. It performs strongly across these tasks without manual configuration for each dataset.
+
+The examples include organs, tumors, and microscopic structures. Their differences in scale and appearance test the framework's ability to adapt the complete pipeline.
+
+### Pipeline configuration
+
+The KiTS analysis examines why successful kidney and tumor segmentation systems perform well. Differences in pipeline configuration have a substantial effect, and adding architectural components does not consistently improve over a well-configured baseline.
+
+The result helps explain the framework's performance: its strength comes from coordinating the details that are often left to manual experimentation.
+
+### Configuration across tasks
+
+A choice that improves one dataset can hurt another. The framework therefore combines robust defaults with dataset-specific rules and validation. Evaluating decisions across multiple tasks provides a better basis for those defaults than optimizing a single benchmark.
+
+The released framework makes the configuration process available for new segmentation datasets. Detailed rules and generated pipeline examples are also described in the [author preprint](https://arxiv.org/abs/1904.08128v2).
