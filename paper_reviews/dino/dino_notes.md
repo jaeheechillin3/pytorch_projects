@@ -12,7 +12,7 @@ What does a Vision Transformer learn when no one tells it the image's class? DIN
 ## Methods
 
 <p align="center">
-  <img src="https://i-blog.csdnimg.cn/blog_migrate/ad2824720a3c4071bc28c97081d5a247.png" alt="Figure 2. Self-distillation with no labels." width="700">
+  <img src="./images/figure2.png" alt="Figure 2. Self-distillation with no labels." width="700">
 </p>
 
 <p align="center"><em>Figure 2. Self-distillation with no labels. From the <a href="https://arxiv.org/abs/2104.14294">original paper</a>.</em></p>

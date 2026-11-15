@@ -12,7 +12,7 @@ Useful visual features can be learned by recognizing two altered views of the sa
 ## Methods
 
 <p align="center">
-  <img src="https://ucladeepvision.github.io/CS188-Projects-2023Winter/assets/images/team40/simClr.png" alt="Figure 2. The SimCLR contrastive-learning framework." width="700">
+  <img src="./images/figure2.png" alt="Figure 2. The SimCLR contrastive-learning framework." width="700">
 </p>
 
 <p align="center"><em>Figure 2. The SimCLR contrastive-learning framework. From the <a href="https://arxiv.org/abs/2002.05709">original paper</a>.</em></p>

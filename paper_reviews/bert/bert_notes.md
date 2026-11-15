@@ -12,7 +12,7 @@ A word's meaning depends on what comes before and after it. BERT pretrains a dee
 ## Methods
 
 <p align="center">
-  <img src="https://storrs.io/content/images/2021/06/Screen-Shot-2021-06-27-at-8.36.36-AM.png" alt="Figure 1. BERT pretraining and fine-tuning." width="700">
+  <img src="./images/figure1.png" alt="Figure 1. BERT pretraining and fine-tuning." width="700">
 </p>
 
 <p align="center"><em>Figure 1. BERT pretraining and fine-tuning. From the <a href="https://arxiv.org/abs/1810.04805">original paper</a>.</em></p>

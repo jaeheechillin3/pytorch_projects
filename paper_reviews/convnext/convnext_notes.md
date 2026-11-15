@@ -12,7 +12,7 @@ How much of the vision Transformer's advantage comes from attention, and how muc
 ## Methods
 
 <p align="center">
-  <img src="https://sebastianraschka.com/images/blog/2023/top10-papers-2022/convnext-2.png" alt="Figure 2. Progressive modernization of ResNet into ConvNeXt." width="700">
+  <img src="./images/figure2.png" alt="Figure 2. Progressive modernization of ResNet into ConvNeXt." width="700">
 </p>
 
 <p align="center"><em>Figure 2. Progressive modernization of ResNet into ConvNeXt. From the <a href="https://arxiv.org/abs/2201.03545">original paper</a>.</em></p>
